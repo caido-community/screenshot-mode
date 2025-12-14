@@ -92,7 +92,7 @@ watch(
 
 <template>
   <Card
-    class="h-full"
+    class="h-full overflow-scroll"
     :pt="{
       body: { class: 'h-full p-0' },
       content: { class: 'h-full p-4' },
