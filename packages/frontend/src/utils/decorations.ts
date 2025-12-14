@@ -1,4 +1,4 @@
-import { StateEffect, StateField } from "@codemirror/state";
+import { Prec, StateEffect, StateField } from "@codemirror/state";
 import {
   Decoration,
   type DecorationSet,
@@ -189,7 +189,7 @@ export function applyDecorations(
   const hasField = view.state.field(decorationsField, false) !== undefined;
   if (!hasField) {
     view.dispatch({
-      effects: StateEffect.appendConfig.of(decorationsField),
+      effects: StateEffect.appendConfig.of(Prec.highest(decorationsField)),
     });
   }
 
