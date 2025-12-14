@@ -1,11 +1,11 @@
 import { toPng } from "html-to-image";
 
-export async function renderElement(element: HTMLElement): Promise<string> {
+async function renderElement(element: HTMLElement): Promise<string> {
   const dataUrl = await toPng(element, { pixelRatio: 2 });
   return dataUrl;
 }
 
-export function downloadDataUrl(dataUrl: string): void {
+function downloadDataUrl(dataUrl: string): void {
   const link = document.createElement("a");
   link.download = "screenshot.png";
   link.href = dataUrl;
