@@ -113,6 +113,20 @@ function findMatches(
   return matches;
 }
 
+function rangesOverlap(
+  a: { from: number; to: number },
+  b: { from: number; to: number },
+): boolean {
+  return a.from < b.to && b.from < a.to;
+}
+
+function isRangeRedacted(
+  range: { from: number; to: number },
+  redactedRanges: Array<{ from: number; to: number }>,
+): boolean {
+  return redactedRanges.some((redacted) => rangesOverlap(range, redacted));
+}
+
 export function applyDecorations(
   view: EditorView,
   highlights: HighlightRule[],
@@ -132,16 +146,26 @@ export function applyDecorations(
     decoration: Decoration;
   }> = [];
 
+  const redactedRanges: Array<{ from: number; to: number }> = [];
+  for (const rule of redactions) {
+    const matches = findMatches(text, rule.regex);
+    for (const match of matches) {
+      redactedRanges.push(match);
+    }
+  }
+
   for (const rule of highlights) {
     const matches = findMatches(text, rule.regex);
     const decoration = createHighlightDecoration(rule.color, rule.mode);
 
     for (const match of matches) {
-      decorations.push({
-        from: match.from,
-        to: match.to,
-        decoration,
-      });
+      if (!isRangeRedacted(match, redactedRanges)) {
+        decorations.push({
+          from: match.from,
+          to: match.to,
+          decoration,
+        });
+      }
     }
   }
 
