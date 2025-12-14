@@ -9,16 +9,18 @@ import HighlightsSettings from "./HighlightsSettings.vue";
 import LayoutSettings from "./LayoutSettings.vue";
 import RedactionsSettings from "./RedactionsSettings.vue";
 import ResetButton from "./ResetButton.vue";
+import WidthSettings from "./WidthSettings.vue";
 
 import { useSDK } from "@/plugins/sdk";
 import { getDefaultSettings, saveDefaultSettings } from "@/stores/settings";
-import type {
-  Disposition,
-  HighlightRule,
-  RedactionRule,
-  ScreenshotSettings,
+import {
+  DEFAULT_SETTINGS,
+  type Disposition,
+  type HighlightRule,
+  type RedactionRule,
+  type ScreenshotSettings,
+  type WidthSetting,
 } from "@/types";
-import { DEFAULT_SETTINGS } from "@/types";
 
 const sdk = useSDK();
 const confirm = useConfirm();
@@ -36,6 +38,13 @@ const disposition = computed({
   get: () => settings.value.disposition,
   set: (value: Disposition) => {
     settings.value = { ...settings.value, disposition: value };
+  },
+});
+
+const width = computed({
+  get: () => settings.value.width,
+  set: (value: WidthSetting) => {
+    settings.value = { ...settings.value, width: value };
   },
 });
 
@@ -95,6 +104,7 @@ watch(
           <div class="flex flex-col gap-4">
             <HeadersSettings v-model="headersToHide" />
             <LayoutSettings v-model="disposition" />
+            <WidthSettings v-model="width" />
           </div>
 
           <div class="flex flex-col gap-4">

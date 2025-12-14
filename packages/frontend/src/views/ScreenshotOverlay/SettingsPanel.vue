@@ -1,5 +1,7 @@
 <script setup lang="ts">
 import Button from "primevue/button";
+import InputNumber from "primevue/inputnumber";
+import Select from "primevue/select";
 import SelectButton from "primevue/selectbutton";
 import Textarea from "primevue/textarea";
 import { computed } from "vue";
@@ -15,6 +17,8 @@ import {
   type RedactionRule,
   RuleTarget,
   type ScreenshotSettings,
+  WidthMode,
+  type WidthSetting,
 } from "@/types";
 
 const { settings } = defineProps<{
@@ -28,6 +32,13 @@ const emit = defineEmits<{
 const dispositionOptions = [
   { label: "Side by Side", value: Disposition.Horizontal },
   { label: "Stacked", value: Disposition.Vertical },
+];
+
+const widthOptions = [
+  { label: "Full Width", value: WidthMode.Full },
+  { label: "Custom (px)", value: WidthMode.Pixel },
+  { label: "A4 (595px)", value: WidthMode.A4 },
+  { label: "Letter (612px)", value: WidthMode.Letter },
 ];
 
 const headersText = computed({
@@ -45,6 +56,36 @@ const disposition = computed({
   get: () => settings.disposition,
   set: (value: DispositionType) => {
     emit("update", { ...settings, disposition: value });
+  },
+});
+
+const widthMode = computed({
+  get: () => settings.width.mode,
+  set: (value: WidthMode) => {
+    let newWidth: WidthSetting;
+    if (value === WidthMode.Pixel) {
+      newWidth = { mode: WidthMode.Pixel, value: 800 };
+    } else if (value === WidthMode.A4) {
+      newWidth = { mode: WidthMode.A4 };
+    } else if (value === WidthMode.Letter) {
+      newWidth = { mode: WidthMode.Letter };
+    } else {
+      newWidth = { mode: WidthMode.Full };
+    }
+    emit("update", { ...settings, width: newWidth });
+  },
+});
+
+const widthPixelValue = computed({
+  get: () =>
+    settings.width.mode === WidthMode.Pixel ? settings.width.value : 800,
+  set: (value: number) => {
+    if (settings.width.mode === WidthMode.Pixel) {
+      emit("update", {
+        ...settings,
+        width: { mode: WidthMode.Pixel, value },
+      });
+    }
   },
 });
 
@@ -112,6 +153,30 @@ function handleAddRedaction(): void {
         option-value="value"
         class="w-full"
       />
+    </div>
+
+    <div>
+      <label class="mb-2 block text-sm font-medium text-surface-200">
+        Content Width
+      </label>
+      <div class="flex items-center gap-2">
+        <Select
+          v-model="widthMode"
+          :options="widthOptions"
+          option-label="label"
+          option-value="value"
+          class="w-40"
+          append-to="self"
+        />
+        <InputNumber
+          v-if="settings.width.mode === WidthMode.Pixel"
+          v-model="widthPixelValue"
+          :min="200"
+          :max="2000"
+          suffix="px"
+          class="w-32"
+        />
+      </div>
     </div>
 
     <div>

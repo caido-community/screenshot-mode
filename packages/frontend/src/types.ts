@@ -27,6 +27,22 @@ export const Disposition = {
 } as const;
 export type Disposition = (typeof Disposition)[keyof typeof Disposition];
 
+export const WidthMode = {
+  Full: "full",
+  Pixel: "pixel",
+  A4: "a4",
+  Letter: "letter",
+} as const;
+export type WidthMode = (typeof WidthMode)[keyof typeof WidthMode];
+
+type WidthSettingBase = Record<string, never>;
+
+export type WidthSetting =
+  | ({ mode: typeof WidthMode.Pixel; value: number } & WidthSettingBase)
+  | ({ mode: typeof WidthMode.Full } & WidthSettingBase)
+  | ({ mode: typeof WidthMode.A4 } & WidthSettingBase)
+  | ({ mode: typeof WidthMode.Letter } & WidthSettingBase);
+
 export type HighlightRule = {
   id: string;
   regex: string;
@@ -51,6 +67,7 @@ export type RedactionRule = RedactionRuleBase &
 export type ScreenshotSettings = {
   headersToHide: string[];
   disposition: Disposition;
+  width: WidthSetting;
   highlights: HighlightRule[];
   redactions: RedactionRule[];
 };
@@ -58,6 +75,7 @@ export type ScreenshotSettings = {
 export type StoredSettings = {
   headersToHide: string[];
   disposition: Disposition;
+  width: WidthSetting;
   highlights: HighlightRule[];
   redactions: RedactionRule[];
 };
@@ -107,6 +125,7 @@ const DEFAULT_HEADERS_TO_HIDE = [
 export const DEFAULT_SETTINGS: ScreenshotSettings = {
   headersToHide: DEFAULT_HEADERS_TO_HIDE,
   disposition: Disposition.Horizontal,
+  width: { mode: WidthMode.Full },
   highlights: [],
   redactions: [],
 };

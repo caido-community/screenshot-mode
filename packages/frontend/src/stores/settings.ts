@@ -6,11 +6,39 @@ import {
   type FrontendSDK,
   type ScreenshotSettings,
   type StoredSettings,
+  WidthMode,
+  type WidthSetting,
 } from "@/types";
 
 const tabSettings = reactive(new Map<string, ScreenshotSettings>());
 const defaultSettings: Ref<ScreenshotSettings> = ref({ ...DEFAULT_SETTINGS });
 let sdkInstance: FrontendSDK | undefined;
+
+function parseWidthSetting(width: unknown): WidthSetting {
+  if (width === undefined || width === null || typeof width !== "object") {
+    return { mode: WidthMode.Full };
+  }
+
+  const data = width as Partial<WidthSetting>;
+
+  if (data.mode === WidthMode.Pixel) {
+    const pixelData = data as { mode: typeof WidthMode.Pixel; value?: number };
+    return {
+      mode: WidthMode.Pixel,
+      value: typeof pixelData.value === "number" ? pixelData.value : 800,
+    };
+  }
+
+  if (data.mode === WidthMode.A4) {
+    return { mode: WidthMode.A4 };
+  }
+
+  if (data.mode === WidthMode.Letter) {
+    return { mode: WidthMode.Letter };
+  }
+
+  return { mode: WidthMode.Full };
+}
 
 function parseStoredSettings(stored: unknown): ScreenshotSettings {
   if (stored === undefined || stored === null || typeof stored !== "object") {
@@ -25,6 +53,7 @@ function parseStoredSettings(stored: unknown): ScreenshotSettings {
       data.disposition === Disposition.Vertical
         ? Disposition.Vertical
         : Disposition.Horizontal,
+    width: parseWidthSetting(data.width),
     highlights: Array.isArray(data.highlights) ? data.highlights : [],
     redactions: Array.isArray(data.redactions) ? data.redactions : [],
   };
@@ -76,6 +105,7 @@ export async function saveDefaultSettings(
   const toStore: StoredSettings = {
     headersToHide: settings.headersToHide,
     disposition: settings.disposition,
+    width: settings.width,
     highlights: settings.highlights,
     redactions: settings.redactions,
   };

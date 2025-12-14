@@ -148,24 +148,10 @@ onUnmounted(() => {
 <template>
   <div :class="containerClass">
     <div :class="editorClass">
-      <div
-        class="flex h-8 items-center border-b border-surface-600 bg-surface-750 px-3"
-      >
-        <span class="text-xs font-medium uppercase text-surface-400"
-          >Request</span
-        >
-      </div>
-      <div ref="requestEditorContainer" class="h-[calc(100%-2rem)]" />
+      <div ref="requestEditorContainer" class="h-full" />
     </div>
     <div :class="editorClass">
-      <div
-        class="flex h-8 items-center border-b border-surface-600 bg-surface-750 px-3"
-      >
-        <span class="text-xs font-medium uppercase text-surface-400"
-          >Response</span
-        >
-      </div>
-      <div ref="responseEditorContainer" class="h-[calc(100%-2rem)]" />
+      <div ref="responseEditorContainer" class="h-full" />
     </div>
   </div>
 </template>

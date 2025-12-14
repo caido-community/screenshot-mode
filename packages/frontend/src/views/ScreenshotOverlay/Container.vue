@@ -1,9 +1,8 @@
 <script setup lang="ts">
 import { computed, onMounted, onUnmounted, ref, watch } from "vue";
 
-import DataDisplay from "./DataDisplay.vue";
+import { ContentPanel } from "./ContentPanel";
 import SettingsPanel from "./SettingsPanel.vue";
-import UrlHeader from "./UrlHeader.vue";
 
 import { useSDK } from "@/plugins/sdk";
 import { closeOverlay, getOverlayState } from "@/stores/overlay";
@@ -55,7 +54,9 @@ async function loadSessionData(): Promise<void> {
 
   requestRaw.value = request.raw ?? "";
   urlInfo.value = {
-    url: `${request.isTls ? "https" : "http"}://${request.host}:${request.port}${request.path}${request.query ?? ""}`,
+    url: `${request.isTls ? "https" : "http"}://${request.host}:${
+      request.port
+    }${request.path}${request.query ?? ""}`,
     sni: request.sni ?? undefined,
   };
 
@@ -142,15 +143,14 @@ onUnmounted(() => {
             />
           </div>
 
-          <div class="flex flex-1 flex-col overflow-hidden">
-            <UrlHeader :url="urlInfo.url" :sni="urlInfo.sni" />
-            <DataDisplay
-              v-if="settings !== undefined"
-              :request-raw="requestRaw"
-              :response-raw="responseRaw"
-              :settings="settings"
-            />
-          </div>
+          <ContentPanel
+            v-if="settings !== undefined"
+            :settings="settings"
+            :request-raw="requestRaw"
+            :response-raw="responseRaw"
+            :url="urlInfo.url"
+            :sni="urlInfo.sni"
+          />
         </div>
       </div>
     </div>
