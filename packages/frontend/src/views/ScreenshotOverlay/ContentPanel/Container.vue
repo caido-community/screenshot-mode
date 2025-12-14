@@ -41,7 +41,7 @@ const contentStyle = computed(() => {
 <template>
   <div class="flex flex-1 justify-center overflow-hidden">
     <div
-      class="flex w-full flex-col overflow-hidden border-x border-surface-600"
+      class="flex w-full flex-col overflow-hidden border border-surface-600"
       :style="contentStyle"
     >
       <UrlHeader :url="url" :sni="sni" />

@@ -7,7 +7,7 @@ const { url, sni } = defineProps<{
 
 <template>
   <div
-    class="flex items-center gap-4 border-b border-surface-600 bg-surface-750 px-4 py-2"
+    class="flex items-center gap-4 border-b border-surface-600 bg-surface-800 px-4 py-2"
   >
     <div class="flex items-center gap-2">
       <span class="text-xs font-medium uppercase text-surface-400">URL</span>
