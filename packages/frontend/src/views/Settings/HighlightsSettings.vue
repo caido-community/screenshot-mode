@@ -2,7 +2,7 @@
 import Button from "primevue/button";
 
 import { HighlightRulesList } from "@/components/HighlightRulesList";
-import type { HighlightRule } from "@/types";
+import { HighlightMode, type HighlightRule, RuleTarget } from "@/types";
 
 const model = defineModel<HighlightRule[]>({ required: true });
 
@@ -10,9 +10,9 @@ function handleAdd(): void {
   const newRule: HighlightRule = {
     id: crypto.randomUUID(),
     regex: "",
-    target: "request",
+    target: RuleTarget.Request,
     color: "#ffff00",
-    mode: "highlight",
+    mode: HighlightMode.Highlight,
   };
   model.value = [...model.value, newRule];
 }

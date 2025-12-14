@@ -1,13 +1,13 @@
 <script setup lang="ts">
 import SelectButton from "primevue/selectbutton";
 
-import type { Disposition } from "@/types";
+import { Disposition, type Disposition as DispositionType } from "@/types";
 
-const model = defineModel<Disposition>({ required: true });
+const model = defineModel<DispositionType>({ required: true });
 
 const dispositionOptions = [
-  { label: "Side by Side", value: "horizontal" },
-  { label: "Stacked", value: "vertical" },
+  { label: "Side by Side", value: Disposition.Horizontal },
+  { label: "Stacked", value: Disposition.Vertical },
 ];
 </script>
 

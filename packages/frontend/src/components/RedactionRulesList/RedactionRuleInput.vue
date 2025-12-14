@@ -1,10 +1,16 @@
 <script setup lang="ts">
 import Button from "primevue/button";
+import ColorPicker from "primevue/colorpicker";
 import InputText from "primevue/inputtext";
 import Select from "primevue/select";
 import { computed } from "vue";
 
-import type { RedactionMode, RedactionRule, RuleTarget } from "@/types";
+import {
+  RedactionMode,
+  type RedactionRule,
+  RuleTarget,
+  type RuleTarget as RuleTargetType,
+} from "@/types";
 
 const { rule, inOverlay = false } = defineProps<{
   rule: RedactionRule;
@@ -19,26 +25,83 @@ const emit = defineEmits<{
 const appendTo = computed(() => (inOverlay ? "self" : undefined));
 
 const targetOptions = [
-  { label: "Request", value: "request" },
-  { label: "Response", value: "response" },
+  { label: "Request", value: RuleTarget.Request },
+  { label: "Response", value: RuleTarget.Response },
 ];
 
 const modeOptions = [
-  { label: "Blur", value: "blur" },
-  { label: "Black", value: "black" },
-  { label: "Replace", value: "replace" },
+  { label: "Blur", value: RedactionMode.Blur },
+  { label: "Opaque", value: RedactionMode.Opaque },
+  { label: "Replace", value: RedactionMode.Replace },
 ];
 
 function handleRegexChange(value: string | undefined): void {
-  emit("update", { ...rule, regex: value ?? "" });
+  if (rule.mode === RedactionMode.Opaque) {
+    emit("update", {
+      id: rule.id,
+      regex: value ?? "",
+      target: rule.target,
+      mode: RedactionMode.Opaque,
+      color: rule.color,
+    });
+  } else {
+    emit("update", {
+      id: rule.id,
+      regex: value ?? "",
+      target: rule.target,
+      mode: rule.mode,
+    });
+  }
 }
 
-function handleTargetChange(value: RuleTarget): void {
-  emit("update", { ...rule, target: value });
+function handleTargetChange(value: RuleTargetType): void {
+  if (rule.mode === RedactionMode.Opaque) {
+    emit("update", {
+      id: rule.id,
+      regex: rule.regex,
+      target: value,
+      mode: RedactionMode.Opaque,
+      color: rule.color,
+    });
+  } else {
+    emit("update", {
+      id: rule.id,
+      regex: rule.regex,
+      target: value,
+      mode: rule.mode,
+    });
+  }
 }
 
 function handleModeChange(value: RedactionMode): void {
-  emit("update", { ...rule, mode: value });
+  if (value === RedactionMode.Opaque) {
+    emit("update", {
+      id: rule.id,
+      regex: rule.regex,
+      target: rule.target,
+      mode: RedactionMode.Opaque,
+      color: "#000000",
+    });
+  } else {
+    emit("update", {
+      id: rule.id,
+      regex: rule.regex,
+      target: rule.target,
+      mode: value,
+    });
+  }
+}
+
+function handleColorChange(value: string | undefined): void {
+  if (value !== undefined && rule.mode === RedactionMode.Opaque) {
+    emit("update", {
+      id: rule.id,
+      regex: rule.regex,
+      target: rule.target,
+      mode: RedactionMode.Opaque,
+      color: `#${value}`,
+    });
+  }
 }
 </script>
 
@@ -81,6 +144,13 @@ function handleModeChange(value: RedactionMode): void {
         class="w-28"
         :append-to="appendTo"
         @update:model-value="handleModeChange"
+      />
+      <ColorPicker
+        v-if="rule.mode === RedactionMode.Opaque"
+        :model-value="rule.color.replace('#', '')"
+        format="hex"
+        :append-to="appendTo"
+        @update:model-value="handleColorChange"
       />
     </div>
   </div>

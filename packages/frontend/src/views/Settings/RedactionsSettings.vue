@@ -2,7 +2,7 @@
 import Button from "primevue/button";
 
 import { RedactionRulesList } from "@/components/RedactionRulesList";
-import type { RedactionRule } from "@/types";
+import { RedactionMode, type RedactionRule, RuleTarget } from "@/types";
 
 const model = defineModel<RedactionRule[]>({ required: true });
 
@@ -10,8 +10,8 @@ function handleAdd(): void {
   const newRule: RedactionRule = {
     id: crypto.randomUUID(),
     regex: "",
-    target: "request",
-    mode: "blur",
+    target: RuleTarget.Request,
+    mode: RedactionMode.Blur,
   };
   model.value = [...model.value, newRule];
 }

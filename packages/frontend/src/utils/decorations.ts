@@ -6,7 +6,12 @@ import {
   WidgetType,
 } from "@codemirror/view";
 
-import type { HighlightRule, RedactionRule } from "@/types";
+import {
+  HighlightMode,
+  type HighlightRule,
+  RedactionMode,
+  type RedactionRule,
+} from "@/types";
 
 const setDecorations = StateEffect.define<DecorationSet>();
 
@@ -25,8 +30,11 @@ const decorationsField = StateField.define<DecorationSet>({
   provide: (f) => EditorView.decorations.from(f),
 });
 
-function createHighlightDecoration(color: string, mode: string): Decoration {
-  if (mode === "rectangle") {
+function createHighlightDecoration(
+  color: string,
+  mode: HighlightMode,
+): Decoration {
+  if (mode === HighlightMode.Rectangle) {
     return Decoration.mark({
       class: "screenshot-highlight-rectangle",
       attributes: {
@@ -43,8 +51,13 @@ function createHighlightDecoration(color: string, mode: string): Decoration {
   });
 }
 
-function createRedactionDecoration(mode: string): Decoration {
-  if (mode === "blur") {
+type RedactionInput =
+  | { mode: typeof RedactionMode.Opaque; color: string }
+  | { mode: typeof RedactionMode.Blur }
+  | { mode: typeof RedactionMode.Replace };
+
+function createRedactionDecoration(input: RedactionInput): Decoration {
+  if (input.mode === RedactionMode.Blur) {
     return Decoration.mark({
       class: "screenshot-redaction-blur",
       attributes: {
@@ -53,11 +66,11 @@ function createRedactionDecoration(mode: string): Decoration {
     });
   }
 
-  if (mode === "black") {
+  if (input.mode === RedactionMode.Opaque) {
     return Decoration.mark({
-      class: "screenshot-redaction-black",
+      class: "screenshot-redaction-opaque",
       attributes: {
-        style: "background-color: #000; color: #000;",
+        style: `background-color: ${input.color}; color: ${input.color};`,
       },
     });
   }
@@ -171,7 +184,7 @@ export function applyDecorations(
 
   for (const rule of redactions) {
     const matches = findMatches(text, rule.regex);
-    const decoration = createRedactionDecoration(rule.mode);
+    const decoration = createRedactionDecoration(rule);
 
     for (const match of matches) {
       decorations.push({

@@ -6,11 +6,15 @@ import { computed } from "vue";
 
 import { HighlightRulesList } from "@/components/HighlightRulesList";
 import { RedactionRulesList } from "@/components/RedactionRulesList";
-import type {
+import {
   Disposition,
-  HighlightRule,
-  RedactionRule,
-  ScreenshotSettings,
+  type Disposition as DispositionType,
+  HighlightMode,
+  type HighlightRule,
+  RedactionMode,
+  type RedactionRule,
+  RuleTarget,
+  type ScreenshotSettings,
 } from "@/types";
 
 const { settings } = defineProps<{
@@ -22,8 +26,8 @@ const emit = defineEmits<{
 }>();
 
 const dispositionOptions = [
-  { label: "Side by Side", value: "horizontal" },
-  { label: "Stacked", value: "vertical" },
+  { label: "Side by Side", value: Disposition.Horizontal },
+  { label: "Stacked", value: Disposition.Vertical },
 ];
 
 const headersText = computed({
@@ -39,7 +43,7 @@ const headersText = computed({
 
 const disposition = computed({
   get: () => settings.disposition,
-  set: (value: Disposition) => {
+  set: (value: DispositionType) => {
     emit("update", { ...settings, disposition: value });
   },
 });
@@ -56,9 +60,9 @@ function handleAddHighlight(): void {
   const newRule: HighlightRule = {
     id: crypto.randomUUID(),
     regex: "",
-    target: "request",
+    target: RuleTarget.Request,
     color: "#ffff00",
-    mode: "highlight",
+    mode: HighlightMode.Highlight,
   };
   emit("update", {
     ...settings,
@@ -70,8 +74,8 @@ function handleAddRedaction(): void {
   const newRule: RedactionRule = {
     id: crypto.randomUUID(),
     regex: "",
-    target: "request",
-    mode: "blur",
+    target: RuleTarget.Request,
+    mode: RedactionMode.Blur,
   };
   emit("update", {
     ...settings,

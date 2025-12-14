@@ -1,7 +1,12 @@
 import { reactive, ref, type Ref } from "vue";
 
-import type { FrontendSDK, ScreenshotSettings, StoredSettings } from "@/types";
-import { DEFAULT_SETTINGS } from "@/types";
+import {
+  DEFAULT_SETTINGS,
+  Disposition,
+  type FrontendSDK,
+  type ScreenshotSettings,
+  type StoredSettings,
+} from "@/types";
 
 const tabSettings = reactive(new Map<string, ScreenshotSettings>());
 const defaultSettings: Ref<ScreenshotSettings> = ref({ ...DEFAULT_SETTINGS });
@@ -16,7 +21,10 @@ function parseStoredSettings(stored: unknown): ScreenshotSettings {
 
   return {
     headersToHide: Array.isArray(data.headersToHide) ? data.headersToHide : [],
-    disposition: data.disposition === "vertical" ? "vertical" : "horizontal",
+    disposition:
+      data.disposition === Disposition.Vertical
+        ? Disposition.Vertical
+        : Disposition.Horizontal,
     highlights: Array.isArray(data.highlights) ? data.highlights : [],
     redactions: Array.isArray(data.redactions) ? data.redactions : [],
   };

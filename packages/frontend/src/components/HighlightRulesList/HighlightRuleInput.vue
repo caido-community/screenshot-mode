@@ -5,7 +5,12 @@ import InputText from "primevue/inputtext";
 import Select from "primevue/select";
 import { computed } from "vue";
 
-import type { HighlightMode, HighlightRule, RuleTarget } from "@/types";
+import {
+  HighlightMode,
+  type HighlightRule,
+  RuleTarget,
+  type RuleTarget as RuleTargetType,
+} from "@/types";
 
 const { rule, inOverlay = false } = defineProps<{
   rule: HighlightRule;
@@ -20,20 +25,20 @@ const emit = defineEmits<{
 const appendTo = computed(() => (inOverlay ? "self" : undefined));
 
 const targetOptions = [
-  { label: "Request", value: "request" },
-  { label: "Response", value: "response" },
+  { label: "Request", value: RuleTarget.Request },
+  { label: "Response", value: RuleTarget.Response },
 ];
 
 const modeOptions = [
-  { label: "Highlight", value: "highlight" },
-  { label: "Rectangle", value: "rectangle" },
+  { label: "Highlight", value: HighlightMode.Highlight },
+  { label: "Rectangle", value: HighlightMode.Rectangle },
 ];
 
 function handleRegexChange(value: string | undefined): void {
   emit("update", { ...rule, regex: value ?? "" });
 }
 
-function handleTargetChange(value: RuleTarget): void {
+function handleTargetChange(value: RuleTargetType): void {
   emit("update", { ...rule, target: value });
 }
 

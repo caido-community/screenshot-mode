@@ -2,13 +2,30 @@ import { type Caido } from "@caido/sdk-frontend";
 
 export type FrontendSDK = Caido<Record<string, never>, Record<string, never>>;
 
-export type HighlightMode = "highlight" | "rectangle";
+export const HighlightMode = {
+  Highlight: "highlight",
+  Rectangle: "rectangle",
+} as const;
+export type HighlightMode = (typeof HighlightMode)[keyof typeof HighlightMode];
 
-export type RedactionMode = "blur" | "black" | "replace";
+export const RedactionMode = {
+  Blur: "blur",
+  Opaque: "opaque",
+  Replace: "replace",
+} as const;
+export type RedactionMode = (typeof RedactionMode)[keyof typeof RedactionMode];
 
-export type RuleTarget = "request" | "response";
+export const RuleTarget = {
+  Request: "request",
+  Response: "response",
+} as const;
+export type RuleTarget = (typeof RuleTarget)[keyof typeof RuleTarget];
 
-export type Disposition = "horizontal" | "vertical";
+export const Disposition = {
+  Horizontal: "horizontal",
+  Vertical: "vertical",
+} as const;
+export type Disposition = (typeof Disposition)[keyof typeof Disposition];
 
 export type HighlightRule = {
   id: string;
@@ -18,12 +35,18 @@ export type HighlightRule = {
   mode: HighlightMode;
 };
 
-export type RedactionRule = {
+type RedactionRuleBase = {
   id: string;
   regex: string;
   target: RuleTarget;
-  mode: RedactionMode;
 };
+
+export type RedactionRule = RedactionRuleBase &
+  (
+    | { mode: typeof RedactionMode.Opaque; color: string }
+    | { mode: typeof RedactionMode.Blur }
+    | { mode: typeof RedactionMode.Replace }
+  );
 
 export type ScreenshotSettings = {
   headersToHide: string[];
@@ -83,7 +106,7 @@ const DEFAULT_HEADERS_TO_HIDE = [
 
 export const DEFAULT_SETTINGS: ScreenshotSettings = {
   headersToHide: DEFAULT_HEADERS_TO_HIDE,
-  disposition: "horizontal",
+  disposition: Disposition.Horizontal,
   highlights: [],
   redactions: [],
 };

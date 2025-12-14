@@ -2,7 +2,7 @@
 import { computed, onMounted, onUnmounted, ref, watch } from "vue";
 
 import { useSDK } from "@/plugins/sdk";
-import type { ScreenshotSettings } from "@/types";
+import { Disposition, RuleTarget, type ScreenshotSettings } from "@/types";
 import { applyDecorations } from "@/utils/decorations";
 
 const { requestRaw, responseRaw, settings } = defineProps<{
@@ -20,13 +20,13 @@ const requestEditor = sdk.ui.httpRequestEditor();
 const responseEditor = sdk.ui.httpResponseEditor();
 
 const containerClass = computed(() => {
-  return settings.disposition === "horizontal"
+  return settings.disposition === Disposition.Horizontal
     ? "flex flex-row flex-1 overflow-hidden"
     : "flex flex-col flex-1 overflow-hidden";
 });
 
 const editorClass = computed(() => {
-  return settings.disposition === "horizontal"
+  return settings.disposition === Disposition.Horizontal
     ? "flex-1 overflow-hidden border-r border-surface-600 last:border-r-0"
     : "flex-1 overflow-hidden border-b border-surface-600 last:border-b-0";
 });
@@ -92,14 +92,14 @@ function updateEditors(): void {
 
   applyDecorations(
     requestView,
-    settings.highlights.filter((h) => h.target === "request"),
-    settings.redactions.filter((r) => r.target === "request"),
+    settings.highlights.filter((h) => h.target === RuleTarget.Request),
+    settings.redactions.filter((r) => r.target === RuleTarget.Request),
   );
 
   applyDecorations(
     responseView,
-    settings.highlights.filter((h) => h.target === "response"),
-    settings.redactions.filter((r) => r.target === "response"),
+    settings.highlights.filter((h) => h.target === RuleTarget.Response),
+    settings.redactions.filter((r) => r.target === RuleTarget.Response),
   );
 }
 
