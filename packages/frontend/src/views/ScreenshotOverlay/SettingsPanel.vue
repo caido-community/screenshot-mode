@@ -128,18 +128,18 @@ function handleAddRedaction(): void {
 <template>
   <div class="flex flex-col gap-6">
     <div>
-      <label class="mb-2 block text-sm font-medium text-surface-200">
-        Headers to Hide
-      </label>
+      <div class="mb-2">
+        <label class="block text-sm font-medium text-surface-200">
+          Headers to Hide
+        </label>
+        <p class="text-xs text-surface-400">One header per line</p>
+      </div>
       <Textarea
         v-model="headersText"
         rows="4"
-        placeholder="Enter headers to hide, one per line"
+        placeholder="Enter headers to hide"
         class="w-full font-mono text-sm"
       />
-      <p class="mt-1 text-xs text-surface-400">
-        One header name per line (e.g., Cookie, Authorization)
-      </p>
     </div>
 
     <div>
