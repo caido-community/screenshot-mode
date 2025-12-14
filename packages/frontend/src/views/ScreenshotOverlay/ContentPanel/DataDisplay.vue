@@ -25,11 +25,13 @@ const containerClass = computed(() => {
     : "flex flex-col flex-1 overflow-hidden";
 });
 
-const editorClass = computed(() => {
+const requestEditorClass = computed(() => {
   return settings.disposition === Disposition.Horizontal
-    ? "flex-1 overflow-hidden border-r border-surface-600 last:border-r-0"
-    : "flex-1 overflow-hidden border-b border-surface-600 last:border-b-0";
+    ? "flex-1 overflow-hidden border-r border-surface-600"
+    : "flex-1 overflow-hidden border-b border-surface-600";
 });
+
+const responseEditorClass = "flex-1 overflow-hidden";
 
 function filterHeaders(raw: string, headersToHide: string[]): string {
   if (headersToHide.length === 0) {
@@ -117,6 +119,15 @@ watch(
   { deep: true },
 );
 
+watch(
+  () => settings.disposition,
+  (disposition) => {
+    const element = responseEditor.getElement();
+    element.style.borderRight =
+      disposition === Disposition.Horizontal ? "none" : "";
+  },
+);
+
 onMounted(() => {
   if (requestEditorContainer.value !== undefined) {
     const element = requestEditor.getElement();
@@ -129,6 +140,9 @@ onMounted(() => {
     const element = responseEditor.getElement();
     element.style.height = "100%";
     element.style.width = "100%";
+    if (settings.disposition === Disposition.Horizontal) {
+      element.style.borderRight = "none";
+    }
     responseEditorContainer.value.appendChild(element);
   }
 
@@ -147,10 +161,10 @@ onUnmounted(() => {
 
 <template>
   <div :class="containerClass">
-    <div :class="editorClass">
+    <div :class="requestEditorClass">
       <div ref="requestEditorContainer" class="h-full" />
     </div>
-    <div :class="editorClass">
+    <div :class="responseEditorClass">
       <div ref="responseEditorContainer" class="h-full" />
     </div>
   </div>

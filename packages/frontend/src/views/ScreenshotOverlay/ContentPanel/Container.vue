@@ -39,10 +39,11 @@ const contentStyle = computed(() => {
 </script>
 
 <template>
-  <div
-    class="flex flex-1 justify-center overflow-hidden border-x border-surface-600"
-  >
-    <div class="flex w-full flex-col overflow-hidden" :style="contentStyle">
+  <div class="flex flex-1 justify-center overflow-hidden">
+    <div
+      class="flex w-full flex-col overflow-hidden border-x border-surface-600"
+      :style="contentStyle"
+    >
       <UrlHeader :url="url" :sni="sni" />
       <DataDisplay
         :request-raw="requestRaw"
