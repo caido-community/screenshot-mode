@@ -4,8 +4,8 @@ import SelectButton from "primevue/selectbutton";
 import Textarea from "primevue/textarea";
 import { computed } from "vue";
 
-import HighlightRulesList from "@/components/HighlightRulesList/Container.vue";
-import RedactionRulesList from "@/components/RedactionRulesList/Container.vue";
+import { HighlightRulesList } from "@/components/HighlightRulesList";
+import { RedactionRulesList } from "@/components/RedactionRulesList";
 import type {
   Disposition,
   HighlightRule,
@@ -122,6 +122,7 @@ function handleAddRedaction(): void {
       </div>
       <HighlightRulesList
         :rules="settings.highlights"
+        in-overlay
         @update="handleHighlightsChange"
       />
     </div>
@@ -138,6 +139,7 @@ function handleAddRedaction(): void {
       </div>
       <RedactionRulesList
         :rules="settings.redactions"
+        in-overlay
         @update="handleRedactionsChange"
       />
     </div>

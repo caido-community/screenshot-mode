@@ -2,17 +2,21 @@
 import Button from "primevue/button";
 import InputText from "primevue/inputtext";
 import Select from "primevue/select";
+import { computed } from "vue";
 
 import type { RedactionMode, RedactionRule, RuleTarget } from "@/types";
 
-const { rule } = defineProps<{
+const { rule, inOverlay = false } = defineProps<{
   rule: RedactionRule;
+  inOverlay?: boolean;
 }>();
 
 const emit = defineEmits<{
   update: [rule: RedactionRule];
   delete: [];
 }>();
+
+const appendTo = computed(() => (inOverlay ? "self" : undefined));
 
 const targetOptions = [
   { label: "Request", value: "request" },
@@ -65,6 +69,7 @@ function handleModeChange(value: RedactionMode): void {
         option-value="value"
         placeholder="Target"
         class="w-28"
+        :append-to="appendTo"
         @update:model-value="handleTargetChange"
       />
       <Select
@@ -74,6 +79,7 @@ function handleModeChange(value: RedactionMode): void {
         option-value="value"
         placeholder="Mode"
         class="w-28"
+        :append-to="appendTo"
         @update:model-value="handleModeChange"
       />
     </div>

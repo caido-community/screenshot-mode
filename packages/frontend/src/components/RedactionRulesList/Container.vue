@@ -3,8 +3,9 @@ import RedactionRuleInput from "./RedactionRuleInput.vue";
 
 import type { RedactionRule } from "@/types";
 
-const { rules } = defineProps<{
+const { rules, inOverlay = false } = defineProps<{
   rules: RedactionRule[];
+  inOverlay?: boolean;
 }>();
 
 const emit = defineEmits<{
@@ -32,6 +33,7 @@ function handleRuleDelete(index: number): void {
       v-for="(rule, index) in rules"
       :key="rule.id"
       :rule="rule"
+      :in-overlay="inOverlay"
       @update="handleRuleUpdate(index, $event)"
       @delete="handleRuleDelete(index)"
     />

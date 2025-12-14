@@ -7,8 +7,8 @@ import { computed, onMounted, ref } from "vue";
 
 import { ScreenshotOverlay } from "./ScreenshotOverlay";
 
-import HighlightRulesList from "@/components/HighlightRulesList/Container.vue";
-import RedactionRulesList from "@/components/RedactionRulesList/Container.vue";
+import { HighlightRulesList } from "@/components/HighlightRulesList";
+import { RedactionRulesList } from "@/components/RedactionRulesList";
 import { useSDK } from "@/plugins/sdk";
 import { getDefaultSettings, saveDefaultSettings } from "@/stores/settings";
 import type {

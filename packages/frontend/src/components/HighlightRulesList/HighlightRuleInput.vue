@@ -3,17 +3,21 @@ import Button from "primevue/button";
 import ColorPicker from "primevue/colorpicker";
 import InputText from "primevue/inputtext";
 import Select from "primevue/select";
+import { computed } from "vue";
 
 import type { HighlightMode, HighlightRule, RuleTarget } from "@/types";
 
-const { rule } = defineProps<{
+const { rule, inOverlay = false } = defineProps<{
   rule: HighlightRule;
+  inOverlay?: boolean;
 }>();
 
 const emit = defineEmits<{
   update: [rule: HighlightRule];
   delete: [];
 }>();
+
+const appendTo = computed(() => (inOverlay ? "self" : undefined));
 
 const targetOptions = [
   { label: "Request", value: "request" },
@@ -71,6 +75,7 @@ function handleColorChange(value: string | undefined): void {
         option-value="value"
         placeholder="Target"
         class="w-28"
+        :append-to="appendTo"
         @update:model-value="handleTargetChange"
       />
       <Select
@@ -80,11 +85,13 @@ function handleColorChange(value: string | undefined): void {
         option-value="value"
         placeholder="Mode"
         class="w-28"
+        :append-to="appendTo"
         @update:model-value="handleModeChange"
       />
       <ColorPicker
         :model-value="rule.color.replace('#', '')"
         format="hex"
+        :append-to="appendTo"
         @update:model-value="handleColorChange"
       />
     </div>
