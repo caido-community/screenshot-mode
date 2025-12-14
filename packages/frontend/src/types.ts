@@ -39,7 +39,7 @@ export type StoredSettings = {
   redactions: RedactionRule[];
 };
 
-export const DEFAULT_HEADERS_TO_HIDE = [
+const DEFAULT_HEADERS_TO_HIDE = [
   "Accept",
   "Accept-Encoding",
   "Accept-Language",

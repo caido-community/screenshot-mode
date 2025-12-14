@@ -1,5 +1,6 @@
 import { Classic } from "@caido/primevue";
 import PrimeVue from "primevue/config";
+import ConfirmationService from "primevue/confirmationservice";
 import { createApp } from "vue";
 
 import { SDKPlugin } from "./plugins/sdk";
@@ -22,6 +23,7 @@ export const init = (sdk: FrontendSDK) => {
     pt: Classic,
   });
 
+  app.use(ConfirmationService);
   app.use(SDKPlugin, sdk);
 
   const root = document.createElement("div");
