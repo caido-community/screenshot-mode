@@ -91,11 +91,14 @@ class RedactedWidget extends WidgetType {
   }
 }
 
-function findMatches(
-  text: string,
-  pattern: string,
-): Array<{ from: number; to: number }> {
-  const matches: Array<{ from: number; to: number }> = [];
+type MatchResult = {
+  from: number;
+  to: number;
+  groups: Array<{ from: number; to: number; index: number }>;
+};
+
+function findMatches(text: string, pattern: string): MatchResult[] {
+  const matches: MatchResult[] = [];
 
   if (pattern.length === 0) {
     return matches;
@@ -107,9 +110,28 @@ function findMatches(
 
     while (match !== undefined) {
       if (match[0].length > 0) {
+        const groups: Array<{ from: number; to: number; index: number }> = [];
+
+        let currentPos = match.index;
+        for (let i = 1; i < match.length; i++) {
+          const groupText = match[i];
+          if (groupText !== undefined) {
+            const groupStart = text.indexOf(groupText, currentPos);
+            if (groupStart !== -1) {
+              groups.push({
+                from: groupStart,
+                to: groupStart + groupText.length,
+                index: i,
+              });
+              currentPos = groupStart;
+            }
+          }
+        }
+
         matches.push({
           from: match.index,
           to: match.index + match[0].length,
+          groups,
         });
       }
 
@@ -140,6 +162,25 @@ function isRangeRedacted(
   return redactedRanges.some((redacted) => rangesOverlap(range, redacted));
 }
 
+function getRedactionRanges(
+  match: MatchResult,
+  useCaptureGroups: boolean,
+  selectedGroups: number[],
+): Array<{ from: number; to: number }> {
+  if (useCaptureGroups === false || match.groups.length === 0) {
+    return [{ from: match.from, to: match.to }];
+  }
+
+  const ranges: Array<{ from: number; to: number }> = [];
+  for (const group of match.groups) {
+    if (selectedGroups.includes(group.index)) {
+      ranges.push({ from: group.from, to: group.to });
+    }
+  }
+
+  return ranges;
+}
+
 export function applyDecorations(
   view: EditorView,
   highlights: HighlightRule[],
@@ -163,7 +204,12 @@ export function applyDecorations(
   for (const rule of redactions) {
     const matches = findMatches(text, rule.regex);
     for (const match of matches) {
-      redactedRanges.push(match);
+      const ranges = getRedactionRanges(
+        match,
+        rule.useCaptureGroups,
+        rule.selectedGroups,
+      );
+      redactedRanges.push(...ranges);
     }
   }
 
@@ -172,7 +218,9 @@ export function applyDecorations(
     const decoration = createHighlightDecoration(rule.color, rule.mode);
 
     for (const match of matches) {
-      if (!isRangeRedacted(match, redactedRanges)) {
+      if (
+        !isRangeRedacted({ from: match.from, to: match.to }, redactedRanges)
+      ) {
         decorations.push({
           from: match.from,
           to: match.to,
@@ -187,11 +235,18 @@ export function applyDecorations(
     const decoration = createRedactionDecoration(rule);
 
     for (const match of matches) {
-      decorations.push({
-        from: match.from,
-        to: match.to,
-        decoration,
-      });
+      const ranges = getRedactionRanges(
+        match,
+        rule.useCaptureGroups,
+        rule.selectedGroups,
+      );
+      for (const range of ranges) {
+        decorations.push({
+          from: range.from,
+          to: range.to,
+          decoration,
+        });
+      }
     }
   }
 

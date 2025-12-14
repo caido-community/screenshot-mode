@@ -35,13 +35,11 @@ export const WidthMode = {
 } as const;
 export type WidthMode = (typeof WidthMode)[keyof typeof WidthMode];
 
-type WidthSettingBase = Record<string, never>;
-
 export type WidthSetting =
-  | ({ mode: typeof WidthMode.Pixel; value: number } & WidthSettingBase)
-  | ({ mode: typeof WidthMode.Full } & WidthSettingBase)
-  | ({ mode: typeof WidthMode.A4 } & WidthSettingBase)
-  | ({ mode: typeof WidthMode.Letter } & WidthSettingBase);
+  | { mode: typeof WidthMode.Pixel; value: number }
+  | { mode: typeof WidthMode.Full }
+  | { mode: typeof WidthMode.A4 }
+  | { mode: typeof WidthMode.Letter };
 
 export type HighlightRule = {
   id: string;
@@ -55,6 +53,8 @@ type RedactionRuleBase = {
   id: string;
   regex: string;
   target: RuleTarget;
+  useCaptureGroups: boolean;
+  selectedGroups: number[];
 };
 
 export type RedactionRule = RedactionRuleBase &

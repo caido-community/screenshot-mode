@@ -40,6 +40,30 @@ function parseWidthSetting(width: unknown): WidthSetting {
   return { mode: WidthMode.Full };
 }
 
+function parseRedactions(
+  redactions: unknown,
+): ScreenshotSettings["redactions"] {
+  if (!Array.isArray(redactions)) {
+    return [];
+  }
+
+  return redactions.map((r) => {
+    const selectedGroups = Array.isArray(r.selectedGroups)
+      ? r.selectedGroups
+      : [];
+    const useCaptureGroups =
+      typeof r.useCaptureGroups === "boolean"
+        ? r.useCaptureGroups
+        : selectedGroups.length > 0;
+
+    return {
+      ...r,
+      useCaptureGroups,
+      selectedGroups,
+    };
+  });
+}
+
 function parseStoredSettings(stored: unknown): ScreenshotSettings {
   if (stored === undefined || stored === null || typeof stored !== "object") {
     return { ...DEFAULT_SETTINGS };
@@ -55,7 +79,7 @@ function parseStoredSettings(stored: unknown): ScreenshotSettings {
         : Disposition.Horizontal,
     width: parseWidthSetting(data.width),
     highlights: Array.isArray(data.highlights) ? data.highlights : [],
-    redactions: Array.isArray(data.redactions) ? data.redactions : [],
+    redactions: parseRedactions(data.redactions),
   };
 }
 

@@ -117,6 +117,8 @@ function handleAddRedaction(): void {
     regex: "",
     target: RuleTarget.Request,
     mode: RedactionMode.Blur,
+    useCaptureGroups: false,
+    selectedGroups: [],
   };
   emit("update", {
     ...settings,

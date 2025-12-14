@@ -12,6 +12,8 @@ function handleAdd(): void {
     regex: "",
     target: RuleTarget.Request,
     mode: RedactionMode.Blur,
+    useCaptureGroups: false,
+    selectedGroups: [],
   };
   model.value = [...model.value, newRule];
 }
