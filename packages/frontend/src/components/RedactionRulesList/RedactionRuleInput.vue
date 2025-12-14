@@ -35,72 +35,44 @@ const modeOptions = [
   { label: "Replace", value: RedactionMode.Replace },
 ];
 
-function handleRegexChange(value: string | undefined): void {
-  if (rule.mode === RedactionMode.Opaque) {
-    emit("update", {
-      id: rule.id,
-      regex: value ?? "",
-      target: rule.target,
+function buildRule(
+  mode: RedactionMode,
+  overrides: Partial<{ regex: string; target: RuleTargetType; color: string }>,
+): RedactionRule {
+  const base = {
+    id: rule.id,
+    regex: overrides.regex ?? rule.regex,
+    target: overrides.target ?? rule.target,
+  };
+
+  if (mode === RedactionMode.Opaque) {
+    const currentColor =
+      rule.mode === RedactionMode.Opaque ? rule.color : "#000000";
+    return {
+      ...base,
       mode: RedactionMode.Opaque,
-      color: rule.color,
-    });
-  } else {
-    emit("update", {
-      id: rule.id,
-      regex: value ?? "",
-      target: rule.target,
-      mode: rule.mode,
-    });
+      color: overrides.color ?? currentColor,
+    };
   }
+
+  return { ...base, mode };
+}
+
+function handleRegexChange(value: string | undefined): void {
+  emit("update", buildRule(rule.mode, { regex: value ?? "" }));
 }
 
 function handleTargetChange(value: RuleTargetType): void {
-  if (rule.mode === RedactionMode.Opaque) {
-    emit("update", {
-      id: rule.id,
-      regex: rule.regex,
-      target: value,
-      mode: RedactionMode.Opaque,
-      color: rule.color,
-    });
-  } else {
-    emit("update", {
-      id: rule.id,
-      regex: rule.regex,
-      target: value,
-      mode: rule.mode,
-    });
-  }
+  emit("update", buildRule(rule.mode, { target: value }));
 }
 
 function handleModeChange(value: RedactionMode): void {
-  if (value === RedactionMode.Opaque) {
-    emit("update", {
-      id: rule.id,
-      regex: rule.regex,
-      target: rule.target,
-      mode: RedactionMode.Opaque,
-      color: "#000000",
-    });
-  } else {
-    emit("update", {
-      id: rule.id,
-      regex: rule.regex,
-      target: rule.target,
-      mode: value,
-    });
-  }
+  emit("update", buildRule(value, {}));
 }
 
 function handleColorChange(value: string | undefined): void {
   if (value !== undefined && rule.mode === RedactionMode.Opaque) {
-    emit("update", {
-      id: rule.id,
-      regex: rule.regex,
-      target: rule.target,
-      mode: RedactionMode.Opaque,
-      color: `#${value}`,
-    });
+    emit("update", buildRule(RedactionMode.Opaque, { color: `#${value}` }));
   }
 }
 </script>
