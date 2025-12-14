@@ -8,7 +8,7 @@ import tailwindcss from "tailwindcss";
 // @ts-expect-error no declared types at this time
 import tailwindPrimeui from "tailwindcss-primeui";
 
-const id = "frontend-vue";
+const id = "screenshot-mode";
 export default defineConfig({
   id,
   name: "Screenshot Mode",
@@ -22,7 +22,7 @@ export default defineConfig({
   plugins: [
     {
       kind: "frontend",
-      id: "frontend",
+      id: "screenshot-mode-frontend",
       root: "packages/frontend",
       vite: {
         plugins: [vue()],

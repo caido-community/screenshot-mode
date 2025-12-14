@@ -3,44 +3,72 @@ import PrimeVue from "primevue/config";
 import { createApp } from "vue";
 
 import { SDKPlugin } from "./plugins/sdk";
+import { openOverlay } from "./stores/overlay";
+import { initSettingsStore } from "./stores/settings";
 import "./styles/index.css";
 import type { FrontendSDK } from "./types";
 import App from "./views/App.vue";
 
-// This is the entry point for the frontend plugin
+const COMMAND_OPEN_SCREENSHOT = "screenshot-mode.open";
+const PLUGIN_PATH = "/screenshot-mode";
+
 export const init = (sdk: FrontendSDK) => {
+  initSettingsStore(sdk);
+
   const app = createApp(App);
 
-  // Load the PrimeVue component library
   app.use(PrimeVue, {
     unstyled: true,
     pt: Classic,
   });
 
-  // Provide the FrontendSDK
   app.use(SDKPlugin, sdk);
 
-  // Create the root element for the app
   const root = document.createElement("div");
   Object.assign(root.style, {
     height: "100%",
     width: "100%",
   });
 
-  // Set the ID of the root element
-  // Replace this with the value of the prefixWrap plugin in caido.config.ts
-  // This is necessary to prevent styling conflicts between plugins
   root.id = `plugin--frontend-vue`;
 
-  // Mount the app to the root element
   app.mount(root);
 
-  // Add the page to the navigation
-  // Make sure to use a unique name for the page
-  sdk.navigation.addPage("/my-plugin", {
+  sdk.navigation.addPage(PLUGIN_PATH, {
     body: root,
   });
 
-  // Add a sidebar item
-  sdk.sidebar.registerItem("My Plugin", "/my-plugin");
+  sdk.sidebar.registerItem("Screenshot Mode", PLUGIN_PATH, {
+    icon: "fas fa-camera",
+  });
+
+  sdk.commands.register(COMMAND_OPEN_SCREENSHOT, {
+    name: "Open Screenshot Mode",
+    group: "Screenshot Mode",
+    run: () => {
+      const session = sdk.replay.getCurrentSession();
+      if (session !== undefined) {
+        openOverlay(session.id);
+      }
+    },
+    when: () => {
+      return sdk.replay.getCurrentSession() !== undefined;
+    },
+  });
+
+  sdk.commandPalette.register(COMMAND_OPEN_SCREENSHOT);
+
+  sdk.shortcuts.register(COMMAND_OPEN_SCREENSHOT, ["Ctrl", "Shift", "S"]);
+
+  sdk.replay.addToSlot("session-toolbar-primary", {
+    type: "Button",
+    label: "Screenshot",
+    icon: "fas fa-camera",
+    onClick: () => {
+      const session = sdk.replay.getCurrentSession();
+      if (session !== undefined) {
+        openOverlay(session.id);
+      }
+    },
+  });
 };

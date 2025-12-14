@@ -12,6 +12,7 @@
   },
   "devDependencies": {
     "@caido/sdk-frontend": "0.54.1",
+    "@codemirror/state": "^6.5.2",
     "@codemirror/view": "6.36.6",
     "vue-tsc": "2.2.4"
   }
