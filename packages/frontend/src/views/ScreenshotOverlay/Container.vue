@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import Button from "primevue/button";
 import { computed, onMounted, onUnmounted, ref, watch } from "vue";
 
 import { ContentPanel } from "./ContentPanel";
@@ -8,6 +9,7 @@ import { useSDK } from "@/plugins/sdk";
 import { closeOverlay, getOverlayState } from "@/stores/overlay";
 import { getTabSettings, updateTabSettings } from "@/stores/settings";
 import type { ScreenshotSettings } from "@/types";
+import { captureAndDownload } from "@/utils/screenshot";
 
 const sdk = useSDK();
 const overlayState = getOverlayState();
@@ -19,6 +21,7 @@ const urlInfo = ref<{ url: string; sni: string | undefined }>({
   url: "",
   sni: undefined,
 });
+const contentPanelRef = ref<HTMLElement | undefined>(undefined);
 
 const isVisible = computed(() => overlayState.value.isOpen);
 const sessionId = computed(() => overlayState.value.sessionId);
@@ -89,6 +92,13 @@ function handleBackdropClick(event: MouseEvent): void {
   }
 }
 
+async function handleSaveScreenshot(): Promise<void> {
+  if (contentPanelRef.value === undefined) {
+    return;
+  }
+  await captureAndDownload(contentPanelRef.value);
+}
+
 watch(
   () => overlayState.value.sessionId,
   () => {
@@ -123,7 +133,17 @@ onUnmounted(() => {
         <div
           class="flex items-center justify-between border-b border-surface-600 px-4 py-3"
         >
-          <h2 class="text-lg font-semibold text-surface-50">Screenshot Mode</h2>
+          <div class="flex items-center gap-3">
+            <h2 class="text-lg font-semibold text-surface-50">
+              Screenshot Mode
+            </h2>
+            <Button
+              label="Save Screenshot"
+              icon="fas fa-download"
+              size="small"
+              @click="handleSaveScreenshot"
+            />
+          </div>
           <button
             class="rounded p-1 text-surface-400 transition-colors hover:bg-surface-700 hover:text-surface-200"
             @click="closeOverlay"
@@ -143,14 +163,16 @@ onUnmounted(() => {
             />
           </div>
 
-          <ContentPanel
-            v-if="settings !== undefined"
-            :settings="settings"
-            :request-raw="requestRaw"
-            :response-raw="responseRaw"
-            :url="urlInfo.url"
-            :sni="urlInfo.sni"
-          />
+          <div ref="contentPanelRef" class="flex flex-1 overflow-hidden">
+            <ContentPanel
+              v-if="settings !== undefined"
+              :settings="settings"
+              :request-raw="requestRaw"
+              :response-raw="responseRaw"
+              :url="urlInfo.url"
+              :sni="urlInfo.sni"
+            />
+          </div>
         </div>
       </div>
     </div>
