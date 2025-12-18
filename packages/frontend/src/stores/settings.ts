@@ -17,6 +17,22 @@ const templates: Ref<Template[]> = ref([]);
 const defaultTemplateId: Ref<string> = ref("");
 let sdkInstance: FrontendSDK | undefined;
 
+function cloneSettings(settings: ScreenshotSettings): ScreenshotSettings {
+  return {
+    headersToHide: [...settings.headersToHide],
+    disposition: settings.disposition,
+    width:
+      settings.width.mode === WidthMode.Pixel
+        ? { mode: WidthMode.Pixel, value: settings.width.value }
+        : { mode: settings.width.mode },
+    highlights: settings.highlights.map((h) => ({ ...h })),
+    redactions: settings.redactions.map((r) => ({
+      ...r,
+      selectedGroups: [...r.selectedGroups],
+    })),
+  };
+}
+
 function parseWidthSetting(width: unknown): WidthSetting {
   if (width === undefined || width === null || typeof width !== "object") {
     return { mode: WidthMode.Full };
@@ -257,7 +273,7 @@ export function getTabSettings(sessionId: string): ScreenshotSettings {
   }
 
   const defaultTemplate = getDefaultTemplate();
-  const newSettings = { ...defaultTemplate.settings };
+  const newSettings = cloneSettings(defaultTemplate.settings);
   tabSettings.set(sessionId, newSettings);
   return newSettings;
 }
@@ -281,7 +297,7 @@ export function setTabSettingsFromTemplate(
     return getTabSettings(sessionId);
   }
 
-  const settings = { ...template.settings };
+  const settings = cloneSettings(template.settings);
   tabSettings.set(sessionId, settings);
   return settings;
 }
