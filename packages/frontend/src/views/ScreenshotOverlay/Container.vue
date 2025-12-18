@@ -7,7 +7,12 @@ import SettingsPanel from "./SettingsPanel.vue";
 
 import { useSDK } from "@/plugins/sdk";
 import { closeOverlay, getOverlayState } from "@/stores/overlay";
-import { getTabSettings, updateTabSettings } from "@/stores/settings";
+import {
+  getDefaultTemplateId,
+  getTabSettings,
+  setTabSettingsFromTemplate,
+  updateTabSettings,
+} from "@/stores/settings";
 import type { ScreenshotSettings } from "@/types";
 import { captureAndDownload } from "@/utils/screenshot";
 
@@ -15,6 +20,7 @@ const sdk = useSDK();
 const overlayState = getOverlayState();
 
 const settings = ref<ScreenshotSettings | undefined>(undefined);
+const selectedTemplateId = ref<string>("");
 const requestRaw = ref<string>("");
 const responseRaw = ref<string>("");
 const urlInfo = ref<{ url: string; sni: string | undefined }>({
@@ -33,6 +39,7 @@ async function loadSessionData(): Promise<void> {
   }
 
   settings.value = getTabSettings(sid);
+  selectedTemplateId.value = getDefaultTemplateId();
 
   const session = sdk.replay.getCurrentSession();
   if (session === undefined) {
@@ -78,6 +85,16 @@ function handleSettingsChange(newSettings: ScreenshotSettings): void {
   }
 
   settings.value = updateTabSettings(sid, newSettings);
+}
+
+function handleTemplateChange(templateId: string): void {
+  const sid = sessionId.value;
+  if (sid === undefined) {
+    return;
+  }
+
+  selectedTemplateId.value = templateId;
+  settings.value = setTabSettingsFromTemplate(sid, templateId);
 }
 
 function handleKeydown(event: KeyboardEvent): void {
@@ -159,7 +176,9 @@ onUnmounted(() => {
             <SettingsPanel
               v-if="settings !== undefined"
               :settings="settings"
+              :selected-template-id="selectedTemplateId"
               @update="handleSettingsChange"
+              @template-change="handleTemplateChange"
             />
           </div>
 

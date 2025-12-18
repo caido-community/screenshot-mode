@@ -8,6 +8,7 @@ import { computed } from "vue";
 
 import { HighlightRulesList } from "@/components/HighlightRulesList";
 import { RedactionRulesList } from "@/components/RedactionRulesList";
+import { getTemplates } from "@/stores/settings";
 import {
   Disposition,
   type Disposition as DispositionType,
@@ -17,17 +18,33 @@ import {
   type RedactionRule,
   RuleTarget,
   type ScreenshotSettings,
+  type Template,
   WidthMode,
   type WidthSetting,
 } from "@/types";
 
-const { settings } = defineProps<{
+const { settings, selectedTemplateId } = defineProps<{
   settings: ScreenshotSettings;
+  selectedTemplateId: string;
 }>();
 
 const emit = defineEmits<{
   update: [settings: ScreenshotSettings];
+  templateChange: [templateId: string];
 }>();
+
+const templates = computed(() => getTemplates());
+
+const selectedTemplate = computed({
+  get: () => selectedTemplateId,
+  set: (value: string) => {
+    emit("templateChange", value);
+  },
+});
+
+function getTemplateLabel(template: Template): string {
+  return template.name;
+}
 
 const dispositionOptions = [
   { label: "Side by Side", value: Disposition.Horizontal },
@@ -129,6 +146,20 @@ function handleAddRedaction(): void {
 
 <template>
   <div class="flex flex-col gap-6">
+    <div>
+      <label class="mb-2 block text-sm font-medium text-surface-200">
+        Template
+      </label>
+      <Select
+        v-model="selectedTemplate"
+        :options="templates"
+        :option-label="getTemplateLabel"
+        option-value="id"
+        class="w-full"
+        append-to="self"
+      />
+    </div>
+
     <div>
       <div class="mb-2">
         <label class="block text-sm font-medium text-surface-200">

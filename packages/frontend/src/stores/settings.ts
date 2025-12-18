@@ -5,13 +5,16 @@ import {
   Disposition,
   type FrontendSDK,
   type ScreenshotSettings,
+  type StoredData,
   type StoredSettings,
+  type Template,
   WidthMode,
   type WidthSetting,
 } from "@/types";
 
 const tabSettings = reactive(new Map<string, ScreenshotSettings>());
-const defaultSettings: Ref<ScreenshotSettings> = ref({ ...DEFAULT_SETTINGS });
+const templates: Ref<Template[]> = ref([]);
+const defaultTemplateId: Ref<string> = ref("");
 let sdkInstance: FrontendSDK | undefined;
 
 function parseWidthSetting(width: unknown): WidthSetting {
@@ -72,7 +75,9 @@ function parseStoredSettings(stored: unknown): ScreenshotSettings {
   const data = stored as Partial<StoredSettings>;
 
   return {
-    headersToHide: Array.isArray(data.headersToHide) ? data.headersToHide : [],
+    headersToHide: Array.isArray(data.headersToHide)
+      ? data.headersToHide
+      : DEFAULT_SETTINGS.headersToHide,
     disposition:
       data.disposition === Disposition.Vertical
         ? Disposition.Vertical
@@ -83,19 +88,166 @@ function parseStoredSettings(stored: unknown): ScreenshotSettings {
   };
 }
 
+function isStoredData(stored: unknown): stored is StoredData {
+  if (stored === undefined || stored === null || typeof stored !== "object") {
+    return false;
+  }
+
+  const data = stored as Partial<StoredData>;
+  return (
+    typeof data.version === "number" &&
+    Array.isArray(data.templates) &&
+    typeof data.defaultTemplateId === "string"
+  );
+}
+
+function migrateStorage(stored: unknown): StoredData {
+  if (isStoredData(stored)) {
+    return stored;
+  }
+
+  const settings = parseStoredSettings(stored);
+  const defaultTemplate: Template = {
+    id: crypto.randomUUID(),
+    name: "Default",
+    settings,
+  };
+
+  return {
+    version: 1,
+    templates: [defaultTemplate],
+    defaultTemplateId: defaultTemplate.id,
+  };
+}
+
+function loadFromStoredData(data: StoredData): void {
+  templates.value = data.templates;
+  defaultTemplateId.value = data.defaultTemplateId;
+}
+
+async function persistStorage(): Promise<void> {
+  if (sdkInstance === undefined) {
+    return;
+  }
+
+  const data: StoredData = {
+    version: 1,
+    templates: templates.value,
+    defaultTemplateId: defaultTemplateId.value,
+  };
+
+  await sdkInstance.storage.set(data);
+}
+
 export function initSettingsStore(sdk: FrontendSDK): void {
   sdkInstance = sdk;
 
   const stored = sdk.storage.get();
-  defaultSettings.value = parseStoredSettings(stored);
+  const data = migrateStorage(stored);
+  loadFromStoredData(data);
+
+  if (!isStoredData(stored)) {
+    persistStorage();
+  }
 
   sdk.storage.onChange((value) => {
-    defaultSettings.value = parseStoredSettings(value);
+    const newData = migrateStorage(value);
+    loadFromStoredData(newData);
   });
 }
 
-export function getDefaultSettings(): ScreenshotSettings {
-  return { ...defaultSettings.value };
+export function getTemplates(): Template[] {
+  return templates.value;
+}
+
+function getDefaultTemplate(): Template {
+  const template = templates.value.find(
+    (t) => t.id === defaultTemplateId.value,
+  );
+  if (template !== undefined) {
+    return template;
+  }
+
+  return (
+    templates.value[0] ?? {
+      id: "",
+      name: "Default",
+      settings: { ...DEFAULT_SETTINGS },
+    }
+  );
+}
+
+function getTemplateById(id: string): Template | undefined {
+  return templates.value.find((t) => t.id === id);
+}
+
+export async function createTemplate(
+  name: string,
+  settings?: ScreenshotSettings,
+): Promise<Template> {
+  const newTemplate: Template = {
+    id: crypto.randomUUID(),
+    name,
+    settings: settings ?? { ...DEFAULT_SETTINGS },
+  };
+
+  templates.value = [...templates.value, newTemplate];
+  await persistStorage();
+  return newTemplate;
+}
+
+export async function updateTemplate(
+  id: string,
+  updates: Partial<Pick<Template, "name" | "settings">>,
+): Promise<Template | undefined> {
+  const index = templates.value.findIndex((t) => t.id === id);
+  if (index === -1) {
+    return undefined;
+  }
+
+  const updated = { ...templates.value[index]!, ...updates };
+  templates.value = [
+    ...templates.value.slice(0, index),
+    updated,
+    ...templates.value.slice(index + 1),
+  ];
+
+  await persistStorage();
+  return updated;
+}
+
+export async function deleteTemplate(id: string): Promise<boolean> {
+  if (id === defaultTemplateId.value) {
+    return false;
+  }
+
+  const index = templates.value.findIndex((t) => t.id === id);
+  if (index === -1) {
+    return false;
+  }
+
+  templates.value = [
+    ...templates.value.slice(0, index),
+    ...templates.value.slice(index + 1),
+  ];
+
+  await persistStorage();
+  return true;
+}
+
+export async function setDefaultTemplate(id: string): Promise<boolean> {
+  const template = templates.value.find((t) => t.id === id);
+  if (template === undefined) {
+    return false;
+  }
+
+  defaultTemplateId.value = id;
+  await persistStorage();
+  return true;
+}
+
+export function getDefaultTemplateId(): string {
+  return defaultTemplateId.value;
 }
 
 export function getTabSettings(sessionId: string): ScreenshotSettings {
@@ -104,7 +256,8 @@ export function getTabSettings(sessionId: string): ScreenshotSettings {
     return existing;
   }
 
-  const newSettings = getDefaultSettings();
+  const defaultTemplate = getDefaultTemplate();
+  const newSettings = { ...defaultTemplate.settings };
   tabSettings.set(sessionId, newSettings);
   return newSettings;
 }
@@ -119,21 +272,16 @@ export function updateTabSettings(
   return updated;
 }
 
-export async function saveDefaultSettings(
-  settings: ScreenshotSettings,
-): Promise<void> {
-  if (sdkInstance === undefined) {
-    return;
+export function setTabSettingsFromTemplate(
+  sessionId: string,
+  templateId: string,
+): ScreenshotSettings {
+  const template = getTemplateById(templateId);
+  if (template === undefined) {
+    return getTabSettings(sessionId);
   }
 
-  const toStore: StoredSettings = {
-    headersToHide: settings.headersToHide,
-    disposition: settings.disposition,
-    width: settings.width,
-    highlights: settings.highlights,
-    redactions: settings.redactions,
-  };
-
-  await sdkInstance.storage.set(toStore);
-  defaultSettings.value = { ...settings };
+  const settings = { ...template.settings };
+  tabSettings.set(sessionId, settings);
+  return settings;
 }

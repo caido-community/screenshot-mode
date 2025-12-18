@@ -80,6 +80,18 @@ export type StoredSettings = {
   redactions: RedactionRule[];
 };
 
+export type Template = {
+  id: string;
+  name: string;
+  settings: ScreenshotSettings;
+};
+
+export type StoredData = {
+  version: number;
+  templates: Template[];
+  defaultTemplateId: string;
+};
+
 const DEFAULT_HEADERS_TO_HIDE = [
   "Accept",
   "Accept-Encoding",
