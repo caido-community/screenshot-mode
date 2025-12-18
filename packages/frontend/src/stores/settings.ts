@@ -75,11 +75,17 @@ function parseRedactions(
         ? r.useCaptureGroups
         : selectedGroups.length > 0;
 
-    return {
+    const base = {
       ...r,
       useCaptureGroups,
       selectedGroups,
     };
+
+    if (r.mode === "replace" && typeof r.replacementText !== "string") {
+      return { ...base, replacementText: "[REDACTED]" };
+    }
+
+    return base;
   });
 }
 

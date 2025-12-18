@@ -31,6 +31,7 @@ const { settings, selectedTemplateId } = defineProps<{
 const emit = defineEmits<{
   update: [settings: ScreenshotSettings];
   templateChange: [templateId: string];
+  resetToTemplate: [];
 }>();
 
 const templates = computed(() => getTemplates());
@@ -150,14 +151,23 @@ function handleAddRedaction(): void {
       <label class="mb-2 block text-sm font-medium text-surface-200">
         Template
       </label>
-      <Select
-        v-model="selectedTemplate"
-        :options="templates"
-        :option-label="getTemplateLabel"
-        option-value="id"
-        class="w-full"
-        append-to="self"
-      />
+      <div class="flex items-center gap-2">
+        <Select
+          v-model="selectedTemplate"
+          :options="templates"
+          :option-label="getTemplateLabel"
+          option-value="id"
+          class="flex-1"
+          append-to="self"
+        />
+        <Button
+          icon="fas fa-rotate-right"
+          size="small"
+          severity="secondary"
+          title="Reset to template defaults"
+          @click="emit('resetToTemplate')"
+        />
+      </div>
     </div>
 
     <div>

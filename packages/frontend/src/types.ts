@@ -61,7 +61,7 @@ export type RedactionRule = RedactionRuleBase &
   (
     | { mode: typeof RedactionMode.Opaque; color: string }
     | { mode: typeof RedactionMode.Blur }
-    | { mode: typeof RedactionMode.Replace }
+    | { mode: typeof RedactionMode.Replace; replacementText: string }
   );
 
 export type ScreenshotSettings = {
