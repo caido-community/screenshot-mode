@@ -10,7 +10,7 @@ const activeTab = ref("settings");
 
 const menuItems = [
   {
-    label: "Settings",
+    label: "Templates",
     command: () => {
       activeTab.value = "settings";
     },

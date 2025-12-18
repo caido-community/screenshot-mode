@@ -12,10 +12,15 @@ const dispositionOptions = [
 </script>
 
 <template>
-  <div>
-    <label class="mb-2 block text-sm font-medium text-surface-200">
-      Default Layout
-    </label>
+  <div class="rounded-lg border border-surface-600 p-4">
+    <div class="mb-3 flex items-center gap-2">
+      <div
+        class="flex h-5 w-5 items-center justify-center rounded bg-surface-600"
+      >
+        <i class="fas fa-columns text-xs text-surface-300" />
+      </div>
+      <label class="text-sm font-medium text-surface-200">Default Layout</label>
+    </div>
     <SelectButton
       v-model="model"
       :options="dispositionOptions"
