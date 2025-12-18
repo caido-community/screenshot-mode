@@ -33,7 +33,7 @@ function handleSaved(): void {
     class="h-full overflow-hidden"
     :pt="{
       body: { class: 'h-full p-0' },
-      content: { class: 'h-full p-4' },
+      content: { class: 'h-full' },
     }"
   >
     <template #content>

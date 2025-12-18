@@ -111,7 +111,7 @@ async function handleSave(): Promise<void> {
 </script>
 
 <template>
-  <div class="flex h-full flex-col">
+  <div class="flex h-full flex-col p-2">
     <div
       class="flex items-center justify-between border-b border-surface-600 pb-4"
     >
@@ -146,7 +146,7 @@ async function handleSave(): Promise<void> {
         />
       </div>
 
-      <div class="grid gap-6 lg:grid-cols-2">
+      <div class="grid flex-1 gap-6 lg:grid-cols-2">
         <div class="flex flex-col gap-4">
           <HeadersSettings v-model="headersToHide" />
           <LayoutSettings v-model="disposition" />

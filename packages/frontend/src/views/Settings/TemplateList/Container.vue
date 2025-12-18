@@ -85,8 +85,8 @@ async function handleSetDefault(template: Template): Promise<void> {
 </script>
 
 <template>
-  <div class="flex h-full flex-col gap-4">
-    <div class="flex items-center justify-between gap-4">
+  <div class="flex h-full flex-col">
+    <div class="flex items-center justify-between gap-2 p-2">
       <IconField class="flex-1">
         <InputIcon class="fas fa-search" />
         <InputText
@@ -98,7 +98,6 @@ async function handleSetDefault(template: Template): Promise<void> {
       <Button
         label="Create Template"
         icon="fas fa-plus"
-        severity="primary"
         @click="handleCreate"
       />
     </div>
