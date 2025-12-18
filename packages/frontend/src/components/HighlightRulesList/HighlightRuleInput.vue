@@ -54,9 +54,7 @@ function handleColorChange(value: string | undefined): void {
 </script>
 
 <template>
-  <div
-    class="flex flex-col gap-2 rounded border border-surface-600 bg-surface-700 p-2"
-  >
+  <div class="flex flex-col gap-2 rounded border border-surface-600 p-2">
     <div class="flex items-center gap-2">
       <InputText
         :model-value="rule.regex"
