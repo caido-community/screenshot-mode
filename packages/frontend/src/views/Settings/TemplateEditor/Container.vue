@@ -21,7 +21,7 @@ import {
   type WidthSetting,
 } from "@/types";
 
-const { template = undefined } = defineProps<{
+const { template } = defineProps<{
   template?: Template;
 }>();
 
