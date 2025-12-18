@@ -126,6 +126,7 @@ function buildRule(
     regex: string;
     target: RuleTargetType;
     color: string;
+    replacementText: string;
     useCaptureGroups: boolean;
     selectedGroups: number[];
   }>,
@@ -145,6 +146,16 @@ function buildRule(
       ...base,
       mode: RedactionMode.Opaque,
       color: overrides.color ?? currentColor,
+    };
+  }
+
+  if (mode === RedactionMode.Replace) {
+    const currentText =
+      rule.mode === RedactionMode.Replace ? rule.replacementText : "[REDACTED]";
+    return {
+      ...base,
+      mode: RedactionMode.Replace,
+      replacementText: overrides.replacementText ?? currentText,
     };
   }
 
@@ -238,6 +249,17 @@ function handleUseCaptureGroupsChange(value: boolean): void {
     );
   }
 }
+
+function handleReplacementTextChange(value: string | undefined): void {
+  if (rule.mode === RedactionMode.Replace) {
+    emit(
+      "update",
+      buildRule(RedactionMode.Replace, {
+        replacementText: value ?? "[REDACTED]",
+      }),
+    );
+  }
+}
 </script>
 
 <template>
@@ -284,6 +306,13 @@ function handleUseCaptureGroupsChange(value: boolean): void {
         format="hex"
         :append-to="appendTo"
         @update:model-value="handleColorChange"
+      />
+      <InputText
+        v-if="rule.mode === RedactionMode.Replace"
+        :model-value="rule.replacementText"
+        placeholder="[REDACTED]"
+        class="w-32 font-mono text-sm"
+        @update:model-value="handleReplacementTextChange"
       />
     </div>
     <div class="flex items-center gap-2">

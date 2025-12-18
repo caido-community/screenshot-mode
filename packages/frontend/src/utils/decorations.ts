@@ -54,7 +54,7 @@ function createHighlightDecoration(
 type RedactionInput =
   | { mode: typeof RedactionMode.Opaque; color: string }
   | { mode: typeof RedactionMode.Blur }
-  | { mode: typeof RedactionMode.Replace };
+  | { mode: typeof RedactionMode.Replace; replacementText: string };
 
 function createRedactionDecoration(input: RedactionInput): Decoration {
   if (input.mode === RedactionMode.Blur) {
@@ -76,14 +76,21 @@ function createRedactionDecoration(input: RedactionInput): Decoration {
   }
 
   return Decoration.replace({
-    widget: new RedactedWidget(),
+    widget: new RedactedWidget(input.replacementText),
   });
 }
 
 class RedactedWidget extends WidgetType {
+  private text: string;
+
+  constructor(text: string) {
+    super();
+    this.text = text || "[REDACTED]";
+  }
+
   toDOM(): HTMLElement {
     const span = document.createElement("span");
-    span.textContent = "[REDACTED]";
+    span.textContent = this.text;
     span.className = "screenshot-redaction-replace";
     span.style.cssText =
       "background-color: #000; color: #fff; padding: 0 4px; font-family: monospace;";

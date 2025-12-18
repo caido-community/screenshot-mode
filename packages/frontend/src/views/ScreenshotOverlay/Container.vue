@@ -97,6 +97,15 @@ function handleTemplateChange(templateId: string): void {
   settings.value = setTabSettingsFromTemplate(sid, templateId);
 }
 
+function handleResetToTemplate(): void {
+  const sid = sessionId.value;
+  if (sid === undefined) {
+    return;
+  }
+
+  settings.value = setTabSettingsFromTemplate(sid, selectedTemplateId.value);
+}
+
 function handleKeydown(event: KeyboardEvent): void {
   if (event.key === "Escape" && isVisible.value) {
     closeOverlay();
@@ -111,9 +120,15 @@ function handleBackdropClick(event: MouseEvent): void {
 
 async function handleSaveScreenshot(): Promise<void> {
   if (contentPanelRef.value === undefined) {
+    sdk.window.showToast("Content panel not ready", { variant: "error" });
     return;
   }
-  await captureAndDownload(contentPanelRef.value);
+  const result = await captureAndDownload(contentPanelRef.value);
+  if (result.success) {
+    sdk.window.showToast("Screenshot saved!", { variant: "success" });
+  } else {
+    sdk.window.showToast(`Failed: ${result.error}`, { variant: "error" });
+  }
 }
 
 watch(
@@ -179,6 +194,7 @@ onUnmounted(() => {
               :selected-template-id="selectedTemplateId"
               @update="handleSettingsChange"
               @template-change="handleTemplateChange"
+              @reset-to-template="handleResetToTemplate"
             />
           </div>
 
