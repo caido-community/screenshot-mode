@@ -40,10 +40,15 @@ const pixelValue = computed({
 </script>
 
 <template>
-  <div>
-    <label class="mb-2 block text-sm font-medium text-surface-200">
-      Content Width
-    </label>
+  <div class="rounded-lg border border-surface-600 p-4">
+    <div class="mb-3 flex items-center gap-2">
+      <div
+        class="flex h-5 w-5 items-center justify-center rounded bg-surface-600"
+      >
+        <i class="fas fa-arrows-alt-h text-xs text-surface-300" />
+      </div>
+      <label class="text-sm font-medium text-surface-200">Content Width</label>
+    </div>
     <div class="flex items-center gap-2">
       <Select
         v-model="selectedMode"

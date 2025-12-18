@@ -86,7 +86,7 @@ async function handleSetDefault(template: Template): Promise<void> {
 
 <template>
   <div class="flex h-full flex-col">
-    <div class="flex items-center justify-between gap-2 p-2">
+    <div class="flex items-center justify-between gap-2 p-3">
       <IconField class="flex-1">
         <InputIcon class="fas fa-search" />
         <InputText
@@ -98,6 +98,7 @@ async function handleSetDefault(template: Template): Promise<void> {
       <Button
         label="Create Template"
         icon="fas fa-plus"
+        size="small"
         @click="handleCreate"
       />
     </div>
@@ -114,7 +115,7 @@ async function handleSetDefault(template: Template): Promise<void> {
           <div class="flex items-center gap-2">
             <span
               v-if="isDefault(data)"
-              class="h-2 w-2 rounded-full bg-yellow-400"
+              class="h-2 w-2 rounded-full bg-primary"
               title="Default template"
             />
             <span>{{ data.name }}</span>
@@ -131,14 +132,19 @@ async function handleSetDefault(template: Template): Promise<void> {
               title="Edit"
               @click="handleEdit(data)"
             />
-            <Button
-              icon="fas fa-star"
-              size="small"
-              :severity="isDefault(data) ? 'warning' : 'secondary'"
+            <button
+              class="p-1 transition-colors"
+              :class="
+                isDefault(data)
+                  ? 'text-primary cursor-default'
+                  : 'text-surface-400 hover:text-primary cursor-pointer'
+              "
               :disabled="isDefault(data)"
-              title="Set as default"
+              :title="isDefault(data) ? 'Default template' : 'Set as default'"
               @click="handleSetDefault(data)"
-            />
+            >
+              <i :class="isDefault(data) ? 'fas fa-star' : 'far fa-star'" />
+            </button>
             <Button
               icon="fas fa-trash"
               size="small"

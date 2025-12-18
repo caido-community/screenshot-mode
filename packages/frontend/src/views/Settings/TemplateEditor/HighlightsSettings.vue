@@ -23,13 +23,17 @@ function handleUpdate(rules: HighlightRule[]): void {
 </script>
 
 <template>
-  <div>
+  <div class="rounded-lg border border-surface-600 p-4">
     <div class="mb-3 flex items-center justify-between">
-      <div>
-        <label class="block text-sm font-medium text-surface-200">
-          Default Highlights
-        </label>
-        <p class="text-xs text-surface-400">Regex patterns to highlight</p>
+      <div class="flex items-center gap-2">
+        <div
+          class="flex h-5 w-5 items-center justify-center rounded bg-surface-600"
+        >
+          <i class="fas fa-highlighter text-xs text-surface-300" />
+        </div>
+        <label class="text-sm font-medium text-surface-200"
+          >Default Highlights</label
+        >
       </div>
       <Button
         icon="fas fa-plus"
@@ -38,6 +42,7 @@ function handleUpdate(rules: HighlightRule[]): void {
         @click="handleAdd"
       />
     </div>
+    <p class="mb-3 text-xs text-surface-400">Regex patterns to highlight</p>
     <HighlightRulesList :rules="model" @update="handleUpdate" />
   </div>
 </template>
