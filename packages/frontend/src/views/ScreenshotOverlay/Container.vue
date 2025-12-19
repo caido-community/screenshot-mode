@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { storeToRefs } from "pinia";
 import Button from "primevue/button";
 import { computed, onMounted, onUnmounted, ref, watch } from "vue";
 
@@ -15,7 +16,8 @@ import { captureAndDownload } from "@/utils/screenshot";
 const sdk = useSDK();
 const { getTabSettings, setTabSettingsFromTemplate, updateTabSettings } =
   useTabsStore();
-const { defaultTemplateId } = useTemplatesStore();
+const templatesStore = useTemplatesStore();
+const { defaultTemplateId } = storeToRefs(templatesStore);
 const overlayState = getOverlayState();
 
 const settings = ref<ScreenshotSettings | undefined>(undefined);
@@ -38,7 +40,7 @@ async function loadSessionData(): Promise<void> {
   }
 
   settings.value = getTabSettings(sid);
-  selectedTemplateId.value = defaultTemplateId;
+  selectedTemplateId.value = defaultTemplateId.value;
 
   const session = sdk.replay.getCurrentSession();
   if (session === undefined) {

@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { storeToRefs } from "pinia";
 import Button from "primevue/button";
 import InputNumber from "primevue/inputnumber";
 import Select from "primevue/select";
@@ -34,7 +35,8 @@ const emit = defineEmits<{
   resetToTemplate: [];
 }>();
 
-const { templates } = useTemplatesStore();
+const templatesStore = useTemplatesStore();
+const { templates } = storeToRefs(templatesStore);
 
 const selectedTemplate = computed({
   get: () => selectedTemplateId,

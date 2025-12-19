@@ -263,7 +263,7 @@ function handleReplacementTextChange(value: string | undefined): void {
 </script>
 
 <template>
-  <div class="flex flex-col gap-2 rounded-lg bg-surface-700 p-3">
+  <div class="flex flex-col gap-2 rounded-lg border border-surface-600 p-3">
     <div class="flex items-center gap-2">
       <InputText
         :model-value="rule.regex"

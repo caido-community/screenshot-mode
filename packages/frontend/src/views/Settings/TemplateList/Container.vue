@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { storeToRefs } from "pinia";
 import Button from "primevue/button";
 import Column from "primevue/column";
 import ConfirmDialog from "primevue/confirmdialog";
@@ -14,8 +15,9 @@ import { useTemplatesStore } from "@/stores/templates";
 import type { Template } from "@/types";
 
 const sdk = useSDK();
-const { templates, defaultTemplateId, deleteTemplate, setDefaultTemplate } =
-  useTemplatesStore();
+const templatesStore = useTemplatesStore();
+const { templates, defaultTemplateId } = storeToRefs(templatesStore);
+const { deleteTemplate, setDefaultTemplate } = templatesStore;
 const confirm = useConfirm();
 
 const emit = defineEmits<{
@@ -28,13 +30,13 @@ const searchQuery = ref("");
 const filteredTemplates = computed(() => {
   const query = searchQuery.value.toLowerCase().trim();
   if (query === "") {
-    return templates;
+    return templates.value;
   }
-  return templates.filter((t) => t.name.toLowerCase().includes(query));
+  return templates.value.filter((t) => t.name.toLowerCase().includes(query));
 });
 
 function isDefault(template: Template): boolean {
-  return template.id === defaultTemplateId;
+  return template.id === defaultTemplateId.value;
 }
 
 function handleCreate(): void {
@@ -109,7 +111,7 @@ async function handleSetDefault(template: Template): Promise<void> {
           <div class="flex items-center gap-2">
             <span
               v-if="isDefault(data)"
-              class="h-2 w-2 rounded-full bg-primary"
+              class="h-2 w-2 rounded-full bg-secondary-400"
               title="Default template"
             />
             <span>{{ data.name }}</span>
@@ -120,9 +122,10 @@ async function handleSetDefault(template: Template): Promise<void> {
         <template #body="{ data }">
           <div class="flex items-center gap-2">
             <Button
+              text
+              severity="contrast"
               icon="fas fa-edit"
               size="small"
-              severity="secondary"
               title="Edit"
               @click="handleEdit(data)"
             />
@@ -130,7 +133,7 @@ async function handleSetDefault(template: Template): Promise<void> {
               class="p-1 transition-colors"
               :class="
                 isDefault(data)
-                  ? 'text-primary cursor-default'
+                  ? 'text-secondary-400 cursor-default'
                   : 'text-surface-400 hover:text-primary cursor-pointer'
               "
               :disabled="isDefault(data)"
@@ -140,9 +143,10 @@ async function handleSetDefault(template: Template): Promise<void> {
               <i :class="isDefault(data) ? 'fas fa-star' : 'far fa-star'" />
             </button>
             <Button
+              text
+              severity="danger"
               icon="fas fa-trash"
               size="small"
-              severity="danger"
               :disabled="isDefault(data)"
               title="Delete"
               @click="handleDelete(data)"
