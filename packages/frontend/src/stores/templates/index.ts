@@ -10,6 +10,7 @@ import {
   type StoredData,
   type Template,
 } from "@/types";
+import { isPresent } from "@/utils/optional";
 
 export const useTemplatesStore = defineStore("templates", () => {
   const sdk = useSDK();
@@ -103,7 +104,7 @@ export const useTemplatesStore = defineStore("templates", () => {
     const template = templates.value.find(
       (t) => t.id === defaultTemplateId.value,
     );
-    if (template !== undefined) {
+    if (isPresent(template)) {
       return template;
     }
     return (

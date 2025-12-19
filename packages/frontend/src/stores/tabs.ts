@@ -5,6 +5,7 @@ import { ref } from "vue";
 import { useTemplatesStore } from "./templates";
 
 import { type ScreenshotSettings } from "@/types";
+import { isPresent } from "@/utils/optional";
 
 export const useTabsStore = defineStore("tabs", () => {
   const { getDefaultTemplate, getTemplateById } = useTemplatesStore();
@@ -13,7 +14,7 @@ export const useTabsStore = defineStore("tabs", () => {
 
   const getTabSettings = (sessionId: string): ScreenshotSettings => {
     const existing = tabSettings.value.get(sessionId);
-    if (existing !== undefined) {
+    if (isPresent(existing)) {
       return existing;
     }
 

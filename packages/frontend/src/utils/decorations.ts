@@ -6,6 +6,8 @@ import {
   WidgetType,
 } from "@codemirror/view";
 
+import { isPresent } from "./optional";
+
 import {
   HighlightMode,
   type HighlightRule,
@@ -115,14 +117,14 @@ function findMatches(text: string, pattern: string): MatchResult[] {
     const regex = new RegExp(pattern, "g");
     let match: RegExpExecArray | undefined = regex.exec(text) ?? undefined;
 
-    while (match !== undefined) {
+    while (isPresent(match)) {
       if (match[0].length > 0) {
         const groups: Array<{ from: number; to: number; index: number }> = [];
 
         let currentPos = match.index;
         for (let i = 1; i < match.length; i++) {
           const groupText = match[i];
-          if (groupText !== undefined) {
+          if (isPresent(groupText)) {
             const groupStart = text.indexOf(groupText, currentPos);
             if (groupStart !== -1) {
               groups.push({
@@ -193,7 +195,7 @@ export function applyDecorations(
   highlights: HighlightRule[],
   redactions: RedactionRule[],
 ): void {
-  const hasField = view.state.field(decorationsField, false) !== undefined;
+  const hasField = isPresent(view.state.field(decorationsField, false));
   if (!hasField) {
     view.dispatch({
       effects: StateEffect.appendConfig.of(Prec.highest(decorationsField)),

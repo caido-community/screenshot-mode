@@ -8,6 +8,7 @@ import { SDKPlugin } from "./plugins/sdk";
 import { openOverlay } from "./stores/overlay";
 import "./styles/index.css";
 import type { FrontendSDK } from "./types";
+import { isPresent } from "./utils/optional";
 import App from "./views/App.vue";
 
 const COMMAND_OPEN_SCREENSHOT = "screenshot-mode.open";
@@ -49,12 +50,12 @@ export const init = (sdk: FrontendSDK) => {
     group: "Screenshot Mode",
     run: () => {
       const session = sdk.replay.getCurrentSession();
-      if (session !== undefined) {
+      if (isPresent(session)) {
         openOverlay(session.id);
       }
     },
     when: () => {
-      return sdk.replay.getCurrentSession() !== undefined;
+      return isPresent(sdk.replay.getCurrentSession());
     },
   });
 
@@ -68,7 +69,7 @@ export const init = (sdk: FrontendSDK) => {
     icon: "fas fa-camera",
     onClick: () => {
       const session = sdk.replay.getCurrentSession();
-      if (session !== undefined) {
+      if (isPresent(session)) {
         openOverlay(session.id);
       }
     },

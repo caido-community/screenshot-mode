@@ -11,6 +11,7 @@ import {
   RuleTarget,
   type RuleTarget as RuleTargetType,
 } from "@/types";
+import { isPresent } from "@/utils/optional";
 
 const { rule, inOverlay = false } = defineProps<{
   rule: HighlightRule;
@@ -47,7 +48,7 @@ function handleModeChange(value: HighlightMode): void {
 }
 
 function handleColorChange(value: string | undefined): void {
-  if (value !== undefined) {
+  if (isPresent(value)) {
     emit("update", { ...rule, color: `#${value}` });
   }
 }

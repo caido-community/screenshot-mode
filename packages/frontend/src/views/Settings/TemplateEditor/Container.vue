@@ -20,6 +20,7 @@ import {
   type Template,
   type WidthSetting,
 } from "@/types";
+import { isPresent } from "@/utils/optional";
 
 const { template = undefined } = defineProps<{
   template?: Template;
@@ -33,7 +34,7 @@ const emit = defineEmits<{
 const sdk = useSDK();
 const { createTemplate, updateTemplate } = useTemplatesStore();
 
-const isEditing = computed(() => template !== undefined);
+const isEditing = computed(() => isPresent(template));
 
 const name = ref(template?.name ?? "");
 const settings = ref<ScreenshotSettings>(
@@ -96,7 +97,7 @@ async function handleSave(): Promise<void> {
     return;
   }
 
-  if (isEditing.value && template !== undefined) {
+  if (isEditing.value && isPresent(template)) {
     await updateTemplate(template.id, {
       name: trimmedName,
       settings: settings.value,

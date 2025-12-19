@@ -1,4 +1,6 @@
 <script setup lang="ts">
+import { isPresent } from "@/utils/optional";
+
 const { url, sni } = defineProps<{
   url: string;
   sni: string | undefined;
@@ -17,7 +19,7 @@ const { url, sni } = defineProps<{
         {{ url }}
       </code>
     </div>
-    <div v-if="sni !== undefined" class="flex items-center gap-2">
+    <div v-if="isPresent(sni)" class="flex items-center gap-2">
       <span class="text-xs font-medium uppercase text-surface-400">SNI</span>
       <code
         class="rounded bg-surface-700 px-2 py-1 font-mono text-sm text-amber-400"

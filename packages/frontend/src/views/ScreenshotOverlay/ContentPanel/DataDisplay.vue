@@ -4,6 +4,7 @@ import { computed, onMounted, onUnmounted, ref, watch } from "vue";
 import { useSDK } from "@/plugins/sdk";
 import { Disposition, RuleTarget, type ScreenshotSettings } from "@/types";
 import { applyDecorations } from "@/utils/decorations";
+import { isPresent } from "@/utils/optional";
 
 const { requestRaw, responseRaw, settings } = defineProps<{
   requestRaw: string;
@@ -129,14 +130,14 @@ watch(
 );
 
 onMounted(() => {
-  if (requestEditorContainer.value !== undefined) {
+  if (isPresent(requestEditorContainer.value)) {
     const element = requestEditor.getElement();
     element.style.height = "100%";
     element.style.width = "100%";
     requestEditorContainer.value.appendChild(element);
   }
 
-  if (responseEditorContainer.value !== undefined) {
+  if (isPresent(responseEditorContainer.value)) {
     const element = responseEditor.getElement();
     element.style.height = "100%";
     element.style.width = "100%";
@@ -150,10 +151,10 @@ onMounted(() => {
 });
 
 onUnmounted(() => {
-  if (requestEditorContainer.value !== undefined) {
+  if (isPresent(requestEditorContainer.value)) {
     requestEditorContainer.value.innerHTML = "";
   }
-  if (responseEditorContainer.value !== undefined) {
+  if (isPresent(responseEditorContainer.value)) {
     responseEditorContainer.value.innerHTML = "";
   }
 });

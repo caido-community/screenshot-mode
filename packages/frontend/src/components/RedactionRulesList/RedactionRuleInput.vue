@@ -13,6 +13,7 @@ import {
   RuleTarget,
   type RuleTarget as RuleTargetType,
 } from "@/types";
+import { isPresent } from "@/utils/optional";
 
 const { rule, inOverlay = false } = defineProps<{
   rule: RedactionRule;
@@ -223,7 +224,7 @@ function handleModeChange(value: RedactionMode): void {
 }
 
 function handleColorChange(value: string | undefined): void {
-  if (value !== undefined && rule.mode === RedactionMode.Opaque) {
+  if (isPresent(value) && rule.mode === RedactionMode.Opaque) {
     emit("update", buildRule(RedactionMode.Opaque, { color: `#${value}` }));
   }
 }
