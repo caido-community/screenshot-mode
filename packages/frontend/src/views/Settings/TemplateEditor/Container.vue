@@ -10,7 +10,7 @@ import RedactionsSettings from "./RedactionsSettings.vue";
 import WidthSettings from "./WidthSettings.vue";
 
 import { useSDK } from "@/plugins/sdk";
-import { createTemplate, updateTemplate } from "@/stores/settings";
+import { useTemplatesStore } from "@/stores/templates";
 import {
   DEFAULT_SETTINGS,
   type Disposition,
@@ -21,7 +21,7 @@ import {
   type WidthSetting,
 } from "@/types";
 
-const { template } = defineProps<{
+const { template = undefined } = defineProps<{
   template?: Template;
 }>();
 
@@ -31,6 +31,7 @@ const emit = defineEmits<{
 }>();
 
 const sdk = useSDK();
+const { createTemplate, updateTemplate } = useTemplatesStore();
 
 const isEditing = computed(() => template !== undefined);
 

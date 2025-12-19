@@ -1,10 +1,12 @@
 <script setup lang="ts">
 import Card from "primevue/card";
 import Menubar from "primevue/menubar";
-import { ref } from "vue";
+import { onMounted, ref } from "vue";
 
 import { ScreenshotOverlay } from "./ScreenshotOverlay";
 import { SettingsPage } from "./Settings";
+
+import { useTemplatesStore } from "@/stores/templates";
 
 const activeTab = ref("settings");
 
@@ -16,6 +18,12 @@ const menuItems = [
     },
   },
 ];
+
+const templatesStore = useTemplatesStore();
+
+onMounted(() => {
+  templatesStore.initialize();
+});
 </script>
 
 <template>

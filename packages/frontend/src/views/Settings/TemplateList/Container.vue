@@ -10,15 +10,12 @@ import { useConfirm } from "primevue/useconfirm";
 import { computed, ref } from "vue";
 
 import { useSDK } from "@/plugins/sdk";
-import {
-  deleteTemplate,
-  getDefaultTemplateId,
-  getTemplates,
-  setDefaultTemplate,
-} from "@/stores/settings";
+import { useTemplatesStore } from "@/stores/templates";
 import type { Template } from "@/types";
 
 const sdk = useSDK();
+const { templates, defaultTemplateId, deleteTemplate, setDefaultTemplate } =
+  useTemplatesStore();
 const confirm = useConfirm();
 
 const emit = defineEmits<{
@@ -28,19 +25,16 @@ const emit = defineEmits<{
 
 const searchQuery = ref("");
 
-const templates = computed(() => getTemplates());
-const defaultTemplateId = computed(() => getDefaultTemplateId());
-
 const filteredTemplates = computed(() => {
   const query = searchQuery.value.toLowerCase().trim();
   if (query === "") {
-    return templates.value;
+    return templates;
   }
-  return templates.value.filter((t) => t.name.toLowerCase().includes(query));
+  return templates.filter((t) => t.name.toLowerCase().includes(query));
 });
 
 function isDefault(template: Template): boolean {
-  return template.id === defaultTemplateId.value;
+  return template.id === defaultTemplateId;
 }
 
 function handleCreate(): void {
@@ -67,7 +61,7 @@ function handleDelete(template: Template): void {
     acceptLabel: "Delete",
     accept: async () => {
       const success = await deleteTemplate(template.id);
-      if (success) {
+      if (success === true) {
         sdk.window.showToast("Template deleted", { variant: "success" });
       }
     },
@@ -76,7 +70,7 @@ function handleDelete(template: Template): void {
 
 async function handleSetDefault(template: Template): Promise<void> {
   const success = await setDefaultTemplate(template.id);
-  if (success) {
+  if (success === true) {
     sdk.window.showToast(`"${template.name}" is now the default template`, {
       variant: "success",
     });

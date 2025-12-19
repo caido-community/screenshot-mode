@@ -1,11 +1,11 @@
 import { Classic } from "@caido/primevue";
+import { createPinia } from "pinia";
 import PrimeVue from "primevue/config";
 import ConfirmationService from "primevue/confirmationservice";
 import { createApp } from "vue";
 
 import { SDKPlugin } from "./plugins/sdk";
 import { openOverlay } from "./stores/overlay";
-import { initSettingsStore } from "./stores/settings";
 import "./styles/index.css";
 import type { FrontendSDK } from "./types";
 import App from "./views/App.vue";
@@ -14,10 +14,10 @@ const COMMAND_OPEN_SCREENSHOT = "screenshot-mode.open";
 const PLUGIN_PATH = "/screenshot-mode";
 
 export const init = (sdk: FrontendSDK) => {
-  initSettingsStore(sdk);
-
   const app = createApp(App);
+  const pinia = createPinia();
 
+  app.use(pinia);
   app.use(PrimeVue, {
     unstyled: true,
     pt: Classic,

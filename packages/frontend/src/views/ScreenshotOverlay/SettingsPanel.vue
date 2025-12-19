@@ -8,7 +8,7 @@ import { computed } from "vue";
 
 import { HighlightRulesList } from "@/components/HighlightRulesList";
 import { RedactionRulesList } from "@/components/RedactionRulesList";
-import { getTemplates } from "@/stores/settings";
+import { useTemplatesStore } from "@/stores/templates";
 import {
   Disposition,
   type Disposition as DispositionType,
@@ -34,7 +34,7 @@ const emit = defineEmits<{
   resetToTemplate: [];
 }>();
 
-const templates = computed(() => getTemplates());
+const { templates } = useTemplatesStore();
 
 const selectedTemplate = computed({
   get: () => selectedTemplateId,

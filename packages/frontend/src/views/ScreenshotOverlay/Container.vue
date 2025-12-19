@@ -7,16 +7,15 @@ import SettingsPanel from "./SettingsPanel.vue";
 
 import { useSDK } from "@/plugins/sdk";
 import { closeOverlay, getOverlayState } from "@/stores/overlay";
-import {
-  getDefaultTemplateId,
-  getTabSettings,
-  setTabSettingsFromTemplate,
-  updateTabSettings,
-} from "@/stores/settings";
+import { useTabsStore } from "@/stores/tabs";
+import { useTemplatesStore } from "@/stores/templates";
 import type { ScreenshotSettings } from "@/types";
 import { captureAndDownload } from "@/utils/screenshot";
 
 const sdk = useSDK();
+const { getTabSettings, setTabSettingsFromTemplate, updateTabSettings } =
+  useTabsStore();
+const { defaultTemplateId } = useTemplatesStore();
 const overlayState = getOverlayState();
 
 const settings = ref<ScreenshotSettings | undefined>(undefined);
@@ -39,7 +38,7 @@ async function loadSessionData(): Promise<void> {
   }
 
   settings.value = getTabSettings(sid);
-  selectedTemplateId.value = getDefaultTemplateId();
+  selectedTemplateId.value = defaultTemplateId;
 
   const session = sdk.replay.getCurrentSession();
   if (session === undefined) {
