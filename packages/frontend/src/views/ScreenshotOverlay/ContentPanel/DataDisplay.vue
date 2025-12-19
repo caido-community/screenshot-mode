@@ -1,5 +1,7 @@
 <script setup lang="ts">
-import { computed, onMounted, onUnmounted, ref, watch } from "vue";
+import Splitter from "primevue/splitter";
+import SplitterPanel from "primevue/splitterpanel";
+import { computed, nextTick, onMounted, onUnmounted, ref, watch } from "vue";
 
 import { useSDK } from "@/plugins/sdk";
 import { Disposition, RuleTarget, type ScreenshotSettings } from "@/types";
@@ -17,22 +19,17 @@ const sdk = useSDK();
 const requestEditorContainer = ref<HTMLElement | undefined>(undefined);
 const responseEditorContainer = ref<HTMLElement | undefined>(undefined);
 
+const panelSizes = ref([50, 50]);
+const splitterKey = ref(0);
+
 const requestEditor = sdk.ui.httpRequestEditor();
 const responseEditor = sdk.ui.httpResponseEditor();
 
-const containerClass = computed(() => {
+const splitterLayout = computed(() => {
   return settings.disposition === Disposition.Horizontal
-    ? "flex flex-row flex-1 overflow-hidden"
-    : "flex flex-col flex-1 overflow-hidden";
+    ? "horizontal"
+    : "vertical";
 });
-
-const requestEditorClass = computed(() => {
-  return settings.disposition === Disposition.Horizontal
-    ? "flex-1 overflow-hidden border-r border-surface-600"
-    : "flex-1 overflow-hidden border-b border-surface-600";
-});
-
-const responseEditorClass = "flex-1 overflow-hidden";
 
 function filterHeaders(raw: string, headersToHide: string[]): string {
   if (headersToHide.length === 0) {
@@ -121,19 +118,21 @@ watch(
 );
 
 watch(
-  () => settings.disposition,
-  (disposition) => {
-    const element = responseEditor.getElement();
-    element.style.borderRight =
-      disposition === Disposition.Horizontal ? "none" : "";
+  () => settings.width,
+  async () => {
+    panelSizes.value = [50, 50];
+    splitterKey.value++;
+    await nextTick();
+    mountEditors();
   },
 );
 
-onMounted(() => {
+function mountEditors(): void {
   if (isPresent(requestEditorContainer.value)) {
     const element = requestEditor.getElement();
     element.style.height = "100%";
     element.style.width = "100%";
+    requestEditorContainer.value.innerHTML = "";
     requestEditorContainer.value.appendChild(element);
   }
 
@@ -141,13 +140,15 @@ onMounted(() => {
     const element = responseEditor.getElement();
     element.style.height = "100%";
     element.style.width = "100%";
-    if (settings.disposition === Disposition.Horizontal) {
-      element.style.borderRight = "none";
-    }
+    responseEditorContainer.value.innerHTML = "";
     responseEditorContainer.value.appendChild(element);
   }
 
   updateEditors();
+}
+
+onMounted(() => {
+  mountEditors();
 });
 
 onUnmounted(() => {
@@ -161,12 +162,16 @@ onUnmounted(() => {
 </script>
 
 <template>
-  <div :class="containerClass">
-    <div :class="requestEditorClass">
-      <div ref="requestEditorContainer" class="h-full" />
-    </div>
-    <div :class="responseEditorClass">
-      <div ref="responseEditorContainer" class="h-full" />
-    </div>
-  </div>
+  <Splitter
+    :key="splitterKey"
+    :layout="splitterLayout"
+    class="flex-1 overflow-hidden"
+  >
+    <SplitterPanel :size="panelSizes[0]" :min-size="10" class="overflow-hidden">
+      <div ref="requestEditorContainer" class="h-full w-full" />
+    </SplitterPanel>
+    <SplitterPanel :size="panelSizes[1]" :min-size="10" class="overflow-hidden">
+      <div ref="responseEditorContainer" class="h-full w-full" />
+    </SplitterPanel>
+  </Splitter>
 </template>
