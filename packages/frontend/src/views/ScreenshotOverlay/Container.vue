@@ -11,9 +11,20 @@ import { useSDK } from "@/plugins/sdk";
 import { closeOverlay, getOverlayState } from "@/stores/overlay";
 import { useTabsStore } from "@/stores/tabs";
 import { useTemplatesStore } from "@/stores/templates";
-import type { ScreenshotSettings } from "@/types";
+import {
+  HighlightMode,
+  type HighlightRule,
+  RedactionMode,
+  type RedactionRule,
+  type RuleTarget,
+  type ScreenshotSettings,
+} from "@/types";
 import { isPresent } from "@/utils/optional";
+import { escapeRegex } from "@/utils/regex";
 import { captureAndDownload } from "@/utils/screenshot";
+
+const DEFAULT_HIGHLIGHT_COLOR = "#ffff00";
+const DEFAULT_REDACTION_TEXT = "[REDACTED]";
 
 const sdk = useSDK();
 const { getActiveRequestId } = useEntry();
@@ -130,6 +141,52 @@ async function handleSaveScreenshot(): Promise<void> {
   }
 }
 
+function handleAddHighlight(regex: string, target: RuleTarget): void {
+  if (!isPresent(settings.value)) return;
+
+  const newRule: HighlightRule = {
+    id: crypto.randomUUID(),
+    regex: escapeRegex(regex),
+    target,
+    mode: HighlightMode.Highlight,
+    color: DEFAULT_HIGHLIGHT_COLOR,
+  };
+
+  handleSettingsChange({
+    ...settings.value,
+    highlights: [...settings.value.highlights, newRule],
+  });
+}
+
+function handleAddRedaction(regex: string, target: RuleTarget): void {
+  if (!isPresent(settings.value)) return;
+
+  const newRule: RedactionRule = {
+    id: crypto.randomUUID(),
+    regex: escapeRegex(regex),
+    target,
+    mode: RedactionMode.Replace,
+    replacementText: DEFAULT_REDACTION_TEXT,
+    useCaptureGroups: false,
+    selectedGroups: [],
+  };
+
+  handleSettingsChange({
+    ...settings.value,
+    redactions: [...settings.value.redactions, newRule],
+  });
+}
+
+function handleAddHiddenHeader(headerName: string): void {
+  if (!isPresent(settings.value)) return;
+  if (settings.value.headersToHide.includes(headerName)) return;
+
+  handleSettingsChange({
+    ...settings.value,
+    headersToHide: [...settings.value.headersToHide, headerName],
+  });
+}
+
 watch(
   () => overlayState.value.sessionId,
   () => {
@@ -205,6 +262,9 @@ onUnmounted(() => {
               :response-raw="responseRaw"
               :url="urlInfo.url"
               :sni="urlInfo.sni"
+              @add-highlight="handleAddHighlight"
+              @add-redaction="handleAddRedaction"
+              @add-hidden-header="handleAddHiddenHeader"
             />
           </div>
         </div>
