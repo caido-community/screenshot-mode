@@ -287,7 +287,7 @@ function handleReplacementTextChange(value: string | undefined): void {
         option-label="label"
         option-value="value"
         placeholder="Target"
-        class="w-28"
+        class="w-30"
         :append-to="appendTo"
         @update:model-value="handleTargetChange"
       />
@@ -312,7 +312,7 @@ function handleReplacementTextChange(value: string | undefined): void {
         v-if="rule.mode === RedactionMode.Replace"
         :model-value="rule.replacementText"
         placeholder="[REDACTED]"
-        class="w-32 font-mono text-sm"
+        class="min-w-10 font-mono text-sm"
         @update:model-value="handleReplacementTextChange"
       />
     </div>

@@ -78,7 +78,7 @@ function handleColorChange(value: string | undefined): void {
         option-label="label"
         option-value="value"
         placeholder="Target"
-        class="w-28"
+        class="w-30"
         :append-to="appendTo"
         @update:model-value="handleTargetChange"
       />
@@ -88,7 +88,7 @@ function handleColorChange(value: string | undefined): void {
         option-label="label"
         option-value="value"
         placeholder="Mode"
-        class="w-28"
+        class="min-w-14"
         :append-to="appendTo"
         @update:model-value="handleModeChange"
       />
