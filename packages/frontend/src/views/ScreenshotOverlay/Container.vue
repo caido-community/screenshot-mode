@@ -5,15 +5,18 @@ import { computed, onMounted, onUnmounted, ref, watch } from "vue";
 
 import { ContentPanel } from "./ContentPanel";
 import SettingsPanel from "./SettingsPanel.vue";
+import { useEntry } from "./useEntry";
 
 import { useSDK } from "@/plugins/sdk";
 import { closeOverlay, getOverlayState } from "@/stores/overlay";
 import { useTabsStore } from "@/stores/tabs";
 import { useTemplatesStore } from "@/stores/templates";
 import type { ScreenshotSettings } from "@/types";
+import { isPresent } from "@/utils/optional";
 import { captureAndDownload } from "@/utils/screenshot";
 
 const sdk = useSDK();
+const { getActiveRequestId } = useEntry();
 const { getTabSettings, setTabSettingsFromTemplate, updateTabSettings } =
   useTabsStore();
 const templatesStore = useTemplatesStore();
@@ -47,17 +50,12 @@ async function loadSessionData(): Promise<void> {
     return;
   }
 
-  const activeEntryId = session.entryIds[session.entryIds.length - 1];
-  if (activeEntryId === undefined) {
+  const activeRequestId = await getActiveRequestId();
+  if (activeRequestId === undefined) {
     return;
   }
 
-  const entry = sdk.replay.getEntry(activeEntryId);
-  if (entry.requestId === undefined) {
-    return;
-  }
-
-  const requestData = await sdk.graphql.request({ id: entry.requestId });
+  const requestData = await sdk.graphql.request({ id: activeRequestId });
   const request = requestData.request;
   if (request === undefined || request === null) {
     return;
@@ -71,7 +69,7 @@ async function loadSessionData(): Promise<void> {
     sni: request.sni ?? undefined,
   };
 
-  if (request.response !== undefined && request.response !== null) {
+  if (isPresent(request.response)) {
     const responseData = await sdk.graphql.response({
       id: request.response.id,
     });
@@ -190,7 +188,7 @@ onUnmounted(() => {
             class="w-1/4 min-w-64 overflow-y-auto border-r border-surface-600 p-4"
           >
             <SettingsPanel
-              v-if="settings !== undefined"
+              v-if="isPresent(settings)"
               :settings="settings"
               :selected-template-id="selectedTemplateId"
               @update="handleSettingsChange"
@@ -201,7 +199,7 @@ onUnmounted(() => {
 
           <div ref="contentPanelRef" class="flex flex-1 overflow-hidden">
             <ContentPanel
-              v-if="settings !== undefined"
+              v-if="isPresent(settings)"
               :settings="settings"
               :request-raw="requestRaw"
               :response-raw="responseRaw"
