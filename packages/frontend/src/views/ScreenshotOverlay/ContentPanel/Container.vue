@@ -45,20 +45,18 @@ const contentStyle = computed(() => {
 </script>
 
 <template>
-  <div class="flex flex-1 justify-center overflow-hidden">
-    <div
-      class="flex w-full flex-col overflow-hidden border border-surface-600"
-      :style="contentStyle"
-    >
-      <UrlHeader :url="url" :sni="sni" />
-      <DataDisplay
-        :request-raw="requestRaw"
-        :response-raw="responseRaw"
-        :settings="settings"
-        @add-highlight="(regex, target) => emit('addHighlight', regex, target)"
-        @add-redaction="(regex, target) => emit('addRedaction', regex, target)"
-        @add-hidden-header="(headerName) => emit('addHiddenHeader', headerName)"
-      />
-    </div>
+  <div
+    class="flex w-full flex-col overflow-hidden border border-surface-600"
+    :style="contentStyle"
+  >
+    <UrlHeader :url="url" :sni="sni" />
+    <DataDisplay
+      :request-raw="requestRaw"
+      :response-raw="responseRaw"
+      :settings="settings"
+      @add-highlight="(regex, target) => emit('addHighlight', regex, target)"
+      @add-redaction="(regex, target) => emit('addRedaction', regex, target)"
+      @add-hidden-header="(headerName) => emit('addHiddenHeader', headerName)"
+    />
   </div>
 </template>

@@ -235,7 +235,11 @@ onUnmounted(() => {
 </script>
 
 <template>
-  <Splitter :key="splitterKey" :layout="splitterLayout" class="flex-1 overflow-hidden">
+  <Splitter
+    :key="splitterKey"
+    :layout="splitterLayout"
+    class="flex-1 overflow-hidden"
+  >
     <SplitterPanel :size="panelSizes[0]" :min-size="10" class="overflow-hidden">
       <div ref="requestEditorContainer" class="h-full w-full" />
     </SplitterPanel>
@@ -244,7 +248,13 @@ onUnmounted(() => {
     </SplitterPanel>
   </Splitter>
 
-  <SelectionContextMenu :x="contextMenuPosition.x" :y="contextMenuPosition.y" :visible="contextMenuVisible"
-    @highlight="handleHighlight" @redact="handleRedact" @hide-header="handleHideHeader"
-    @close="contextMenuVisible = false" />
+  <SelectionContextMenu
+    :x="contextMenuPosition.x"
+    :y="contextMenuPosition.y"
+    :visible="contextMenuVisible"
+    @highlight="handleHighlight"
+    @redact="handleRedact"
+    @hide-header="handleHideHeader"
+    @close="contextMenuVisible = false"
+  />
 </template>
