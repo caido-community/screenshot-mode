@@ -16,7 +16,7 @@
 
 Create pretty screenshots of your requests and response right into Caido. No external tools, no pain. Start sharing!
 
-<img width="1429" height="762" alt="Overlay" src="https://github.com/user-attachments/assets/c695ce13-645f-4a8d-914e-c32c94f1520f" />
+<img width="1435" height="822" alt="Image" src="https://github.com/user-attachments/assets/afb25d54-42fc-4d58-8bca-8778c99b8c17" />
 
 ## Installation
 
