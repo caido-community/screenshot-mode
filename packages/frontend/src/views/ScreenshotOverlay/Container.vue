@@ -197,15 +197,17 @@ onUnmounted(() => {
             />
           </div>
 
-          <div ref="contentPanelRef" class="flex flex-1 overflow-hidden">
-            <ContentPanel
-              v-if="isPresent(settings)"
-              :settings="settings"
-              :request-raw="requestRaw"
-              :response-raw="responseRaw"
-              :url="urlInfo.url"
-              :sni="urlInfo.sni"
-            />
+          <div class="flex flex-1 bg-surface-900">
+            <div ref="contentPanelRef" class="flex flex-1 justify-center">
+              <ContentPanel
+                v-if="isPresent(settings)"
+                :settings="settings"
+                :request-raw="requestRaw"
+                :response-raw="responseRaw"
+                :url="urlInfo.url"
+                :sni="urlInfo.sni"
+              />
+            </div>
           </div>
         </div>
       </div>
