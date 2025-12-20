@@ -28,7 +28,7 @@ const emit = defineEmits<{
       text
       @click="emit('highlight')"
     />
-    
+
     <Button
       label="Redact"
       icon="fas fa-mask"

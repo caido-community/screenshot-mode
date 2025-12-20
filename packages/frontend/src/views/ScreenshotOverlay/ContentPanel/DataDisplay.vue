@@ -184,29 +184,31 @@ function handleHideHeader(): void {
 }
 
 function handleRequestContextMenu(e: MouseEvent): void {
-  const view = requestEditor.getEditorView();
-  const sel = view.state.selection.main;
-  const text = view.state.sliceDoc(sel.from, sel.to);
-  if (text.length > 0) {
-    e.preventDefault();
-    selectedText.value = text;
-    selectionTarget.value = RuleTarget.Request;
-    contextMenuPosition.value = { x: e.clientX, y: e.clientY };
-    contextMenuVisible.value = true;
-  }
+  setTimeout(() => {
+    const view = requestEditor.getEditorView();
+    const sel = view.state.selection.main;
+    const text = view.state.sliceDoc(sel.from, sel.to);
+    if (text.length > 0) {
+      selectedText.value = text;
+      selectionTarget.value = RuleTarget.Request;
+      contextMenuPosition.value = { x: e.clientX, y: e.clientY };
+      contextMenuVisible.value = true;
+    }
+  }, 0);
 }
 
 function handleResponseContextMenu(e: MouseEvent): void {
-  const view = responseEditor.getEditorView();
-  const sel = view.state.selection.main;
-  const text = view.state.sliceDoc(sel.from, sel.to);
-  if (text.length > 0) {
-    e.preventDefault();
-    selectedText.value = text;
-    selectionTarget.value = RuleTarget.Response;
-    contextMenuPosition.value = { x: e.clientX, y: e.clientY };
-    contextMenuVisible.value = true;
-  }
+  setTimeout(() => {
+    const view = responseEditor.getEditorView();
+    const sel = view.state.selection.main;
+    const text = view.state.sliceDoc(sel.from, sel.to);
+    if (text.length > 0) {
+      selectedText.value = text;
+      selectionTarget.value = RuleTarget.Response;
+      contextMenuPosition.value = { x: e.clientX, y: e.clientY };
+      contextMenuVisible.value = true;
+    }
+  }, 0);
 }
 
 onMounted(() => {
