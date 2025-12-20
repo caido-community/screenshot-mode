@@ -4,7 +4,7 @@ import { computed } from "vue";
 import DataDisplay from "./DataDisplay.vue";
 import UrlHeader from "./UrlHeader.vue";
 
-import { type ScreenshotSettings, WidthMode } from "@/types";
+import { type RuleTarget, type ScreenshotSettings, WidthMode } from "@/types";
 
 const WIDTH_PRESETS = {
   [WidthMode.A4]: 595,
@@ -17,6 +17,12 @@ const { settings, requestRaw, responseRaw, url, sni } = defineProps<{
   responseRaw: string;
   url: string;
   sni: string | undefined;
+}>();
+
+const emit = defineEmits<{
+  addHighlight: [regex: string, target: RuleTarget];
+  addRedaction: [regex: string, target: RuleTarget];
+  addHiddenHeader: [headerName: string];
 }>();
 
 const contentStyle = computed(() => {
@@ -48,6 +54,9 @@ const contentStyle = computed(() => {
       :request-raw="requestRaw"
       :response-raw="responseRaw"
       :settings="settings"
+      @add-highlight="(regex, target) => emit('addHighlight', regex, target)"
+      @add-redaction="(regex, target) => emit('addRedaction', regex, target)"
+      @add-hidden-header="(headerName) => emit('addHiddenHeader', headerName)"
     />
   </div>
 </template>

@@ -3,6 +3,7 @@ import Splitter from "primevue/splitter";
 import SplitterPanel from "primevue/splitterpanel";
 import { computed, nextTick, onMounted, onUnmounted, ref, watch } from "vue";
 
+import { SelectionContextMenu } from "@/components/SelectionContextMenu";
 import { useSDK } from "@/plugins/sdk";
 import { Disposition, RuleTarget, type ScreenshotSettings } from "@/types";
 import { applyDecorations } from "@/utils/decorations";
@@ -12,6 +13,12 @@ const { requestRaw, responseRaw, settings } = defineProps<{
   requestRaw: string;
   responseRaw: string;
   settings: ScreenshotSettings;
+}>();
+
+const emit = defineEmits<{
+  addHighlight: [regex: string, target: RuleTarget];
+  addRedaction: [regex: string, target: RuleTarget];
+  addHiddenHeader: [headerName: string];
 }>();
 
 const sdk = useSDK();
@@ -30,6 +37,11 @@ const splitterLayout = computed(() => {
     ? "horizontal"
     : "vertical";
 });
+
+const contextMenuVisible = ref(false);
+const contextMenuPosition = ref({ x: 0, y: 0 });
+const selectedText = ref("");
+const selectionTarget = ref<RuleTarget>(RuleTarget.Request);
 
 function filterHeaders(raw: string, headersToHide: string[]): string {
   if (headersToHide.length === 0) {
@@ -147,11 +159,74 @@ function mountEditors(): void {
   updateEditors();
 }
 
+function handleGlobalClick(): void {
+  contextMenuVisible.value = false;
+}
+
+function handleHighlight(): void {
+  emit("addHighlight", selectedText.value, selectionTarget.value);
+  contextMenuVisible.value = false;
+}
+
+function handleRedact(): void {
+  emit("addRedaction", selectedText.value, selectionTarget.value);
+  contextMenuVisible.value = false;
+}
+
+function handleHideHeader(): void {
+  const colonIndex = selectedText.value.indexOf(":");
+  const headerName =
+    colonIndex > 0
+      ? selectedText.value.substring(0, colonIndex).trim()
+      : selectedText.value.trim();
+  emit("addHiddenHeader", headerName);
+  contextMenuVisible.value = false;
+}
+
+function handleRequestContextMenu(e: MouseEvent): void {
+  setTimeout(() => {
+    const view = requestEditor.getEditorView();
+    const sel = view.state.selection.main;
+    const text = view.state.sliceDoc(sel.from, sel.to);
+    if (text.length > 0) {
+      selectedText.value = text;
+      selectionTarget.value = RuleTarget.Request;
+      contextMenuPosition.value = { x: e.clientX, y: e.clientY };
+      contextMenuVisible.value = true;
+    }
+  }, 0);
+}
+
+function handleResponseContextMenu(e: MouseEvent): void {
+  setTimeout(() => {
+    const view = responseEditor.getEditorView();
+    const sel = view.state.selection.main;
+    const text = view.state.sliceDoc(sel.from, sel.to);
+    if (text.length > 0) {
+      selectedText.value = text;
+      selectionTarget.value = RuleTarget.Response;
+      contextMenuPosition.value = { x: e.clientX, y: e.clientY };
+      contextMenuVisible.value = true;
+    }
+  }, 0);
+}
+
 onMounted(() => {
+  document.addEventListener("click", handleGlobalClick);
+
+  requestEditor
+    .getElement()
+    .addEventListener("contextmenu", handleRequestContextMenu);
+
+  responseEditor
+    .getElement()
+    .addEventListener("contextmenu", handleResponseContextMenu);
+
   mountEditors();
 });
 
 onUnmounted(() => {
+  document.removeEventListener("click", handleGlobalClick);
   if (isPresent(requestEditorContainer.value)) {
     requestEditorContainer.value.innerHTML = "";
   }
@@ -174,4 +249,14 @@ onUnmounted(() => {
       <div ref="responseEditorContainer" class="h-full w-full" />
     </SplitterPanel>
   </Splitter>
+
+  <SelectionContextMenu
+    :x="contextMenuPosition.x"
+    :y="contextMenuPosition.y"
+    :visible="contextMenuVisible"
+    @highlight="handleHighlight"
+    @redact="handleRedact"
+    @hide-header="handleHideHeader"
+    @close="contextMenuVisible = false"
+  />
 </template>
