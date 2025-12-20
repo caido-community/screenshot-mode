@@ -9,16 +9,18 @@ import { Disposition, RuleTarget, type ScreenshotSettings } from "@/types";
 import { applyDecorations } from "@/utils/decorations";
 import { isPresent } from "@/utils/optional";
 
-const { requestRaw, responseRaw, settings } = defineProps<{
+const { requestRaw, responseRaw, settings, splitterSizes } = defineProps<{
   requestRaw: string;
   responseRaw: string;
   settings: ScreenshotSettings;
+  splitterSizes: [number, number];
 }>();
 
 const emit = defineEmits<{
   addHighlight: [regex: string, target: RuleTarget];
   addRedaction: [regex: string, target: RuleTarget];
   addHiddenHeader: [headerName: string];
+  updateSplitterSizes: [sizes: [number, number]];
 }>();
 
 const sdk = useSDK();
@@ -26,7 +28,6 @@ const sdk = useSDK();
 const requestEditorContainer = ref<HTMLElement | undefined>(undefined);
 const responseEditorContainer = ref<HTMLElement | undefined>(undefined);
 
-const panelSizes = ref([50, 50]);
 const splitterKey = ref(0);
 
 const requestEditor = sdk.ui.httpRequestEditor();
@@ -132,7 +133,7 @@ watch(
 watch(
   () => settings.width,
   async () => {
-    panelSizes.value = [50, 50];
+    emit("updateSplitterSizes", [50, 50]);
     splitterKey.value++;
     await nextTick();
     mountEditors();
@@ -181,6 +182,10 @@ function handleHideHeader(): void {
       : selectedText.value.trim();
   emit("addHiddenHeader", headerName);
   contextMenuVisible.value = false;
+}
+
+function handleResizeEnd(e: { sizes: number[] }): void {
+  emit("updateSplitterSizes", [e.sizes[0], e.sizes[1]] as [number, number]);
 }
 
 function handleRequestContextMenu(e: MouseEvent): void {
@@ -237,15 +242,11 @@ onUnmounted(() => {
 </script>
 
 <template>
-  <Splitter
-    :key="splitterKey"
-    :layout="splitterLayout"
-    class="flex-1 overflow-hidden"
-  >
-    <SplitterPanel :size="panelSizes[0]" :min-size="10" class="overflow-hidden">
+  <Splitter :key="splitterKey" :layout="splitterLayout" class="flex-1 overflow-hidden" @resizeend="handleResizeEnd">
+    <SplitterPanel :size="splitterSizes[0]" :min-size="10" class="overflow-hidden">
       <div ref="requestEditorContainer" class="h-full w-full" />
     </SplitterPanel>
-    <SplitterPanel :size="panelSizes[1]" :min-size="10" class="overflow-hidden">
+    <SplitterPanel :size="splitterSizes[1]" :min-size="10" class="overflow-hidden">
       <div ref="responseEditorContainer" class="h-full w-full" />
     </SplitterPanel>
   </Splitter>
