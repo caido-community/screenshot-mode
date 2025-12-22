@@ -28,7 +28,7 @@ const DEFAULT_REDACTION_TEXT = "[REDACTED]";
 
 const sdk = useSDK();
 const { getActiveRequestId } = useEntry();
-const { getTabSettings, setTabSettingsFromTemplate, updateTabSettings } =
+const { getTabSettings, setTabSettingsFromTemplate, updateTabSettings, getSplitterSizes, setSplitterSizes } =
   useTabsStore();
 const templatesStore = useTemplatesStore();
 const { defaultTemplateId } = storeToRefs(templatesStore);
@@ -46,6 +46,11 @@ const contentPanelRef = ref<HTMLElement | undefined>(undefined);
 
 const isVisible = computed(() => overlayState.value.isOpen);
 const sessionId = computed(() => overlayState.value.sessionId);
+const splitterSizes = computed(() => {
+  const sid = sessionId.value;
+  if (sid === undefined) return [50, 50] as [number, number];
+  return getSplitterSizes(sid);
+});
 
 async function loadSessionData(): Promise<void> {
   const sid = sessionId.value;
@@ -263,9 +268,16 @@ onUnmounted(() => {
                 :response-raw="responseRaw"
                 :url="urlInfo.url"
                 :sni="urlInfo.sni"
+                :splitter-sizes="splitterSizes"
                 @add-highlight="handleAddHighlight"
                 @add-redaction="handleAddRedaction"
                 @add-hidden-header="handleAddHiddenHeader"
+                @update-splitter-sizes="
+                  (sizes) => {
+                    const sid = sessionId;
+                    if (sid) setSplitterSizes(sid, sizes);
+                  }
+                "
               />
             </div>
           </div>

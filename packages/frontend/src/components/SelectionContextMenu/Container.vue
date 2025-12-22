@@ -24,7 +24,7 @@ const emit = defineEmits<{
     <Button
       label="Highlight"
       icon="fas fa-highlighter"
-      class="text-secondary-400"
+      class="text-primary"
       text
       @click="emit('highlight')"
     />
@@ -32,7 +32,7 @@ const emit = defineEmits<{
     <Button
       label="Redact"
       icon="fas fa-mask"
-      class="text-secondary-400"
+      class="text-primary"
       text
       @click="emit('redact')"
     />
@@ -40,7 +40,7 @@ const emit = defineEmits<{
     <Button
       label="Hide Header"
       icon="fas fa-eye-slash"
-      class="text-secondary-400"
+      class="text-primary"
       text
       @click="emit('hideHeader')"
     />

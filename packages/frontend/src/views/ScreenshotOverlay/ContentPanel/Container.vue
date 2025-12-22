@@ -11,18 +11,20 @@ const WIDTH_PRESETS = {
   [WidthMode.Letter]: 612,
 } as const;
 
-const { settings, requestRaw, responseRaw, url, sni } = defineProps<{
-  settings: ScreenshotSettings;
-  requestRaw: string;
-  responseRaw: string;
-  url: string;
-  sni: string | undefined;
-}>();
+const { settings, requestRaw, responseRaw, url, sni, splitterSizes } =  defineProps<{
+    settings: ScreenshotSettings;
+    requestRaw: string;
+    responseRaw: string;
+    url: string;
+    sni: string | undefined;
+    splitterSizes: [number, number];
+  }>();
 
 const emit = defineEmits<{
   addHighlight: [regex: string, target: RuleTarget];
   addRedaction: [regex: string, target: RuleTarget];
   addHiddenHeader: [headerName: string];
+  updateSplitterSizes: [sizes: [number, number]];
 }>();
 
 const contentStyle = computed(() => {
@@ -54,9 +56,11 @@ const contentStyle = computed(() => {
       :request-raw="requestRaw"
       :response-raw="responseRaw"
       :settings="settings"
+      :splitter-sizes="splitterSizes"
       @add-highlight="(regex, target) => emit('addHighlight', regex, target)"
       @add-redaction="(regex, target) => emit('addRedaction', regex, target)"
       @add-hidden-header="(headerName) => emit('addHiddenHeader', headerName)"
+      @update-splitter-sizes="(sizes) => emit('updateSplitterSizes', sizes)"
     />
   </div>
 </template>
