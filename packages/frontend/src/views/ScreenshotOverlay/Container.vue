@@ -21,7 +21,7 @@ import {
 } from "@/types";
 import { isPresent } from "@/utils/optional";
 import { escapeRegex } from "@/utils/regex";
-import { captureAndDownload } from "@/utils/screenshot";
+import { captureAndCopyToClipboard, captureAndDownload } from "@/utils/screenshot";
 
 const DEFAULT_HIGHLIGHT_COLOR = "#ffff00";
 const DEFAULT_REDACTION_TEXT = "[REDACTED]";
@@ -146,6 +146,21 @@ async function handleSaveScreenshot(): Promise<void> {
   }
 }
 
+async function handleCopyScreenshot(): Promise<void> {
+  if (contentPanelRef.value === undefined) {
+    sdk.window.showToast("Content panel not ready", { variant: "error" });
+    return;
+  }
+  const result = await captureAndCopyToClipboard(contentPanelRef.value);
+  if (result.success) {
+    sdk.window.showToast("Screenshot copied to clipboard!", {
+      variant: "success",
+    });
+  } else {
+    sdk.window.showToast(`Failed: ${result.error}`, { variant: "error" });
+  }
+}
+
 function handleAddHighlight(regex: string, target: RuleTarget): void {
   if (!isPresent(settings.value)) return;
 
@@ -235,6 +250,12 @@ onUnmounted(() => {
               icon="fas fa-download"
               size="small"
               @click="handleSaveScreenshot"
+            />
+            <Button
+              label="Copy To Clipboard"
+              icon="fas fa-copy"
+              size="small"
+              @click="handleCopyScreenshot"
             />
           </div>
           <button
