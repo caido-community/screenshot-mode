@@ -31,13 +31,7 @@ const DEFAULT_REDACTION_TEXT = "[REDACTED]";
 
 const sdk = useSDK();
 const { getActiveRequestId } = useEntry();
-const {
-  getTabSettings,
-  setTabSettingsFromTemplate,
-  updateTabSettings,
-  getSplitterSizes,
-  setSplitterSizes,
-} = useTabsStore();
+const { getTabSettings, setTabSettingsFromTemplate, updateTabSettings, getSplitterSizes, setSplitterSizes } = useTabsStore();
 const templatesStore = useTemplatesStore();
 const { defaultTemplateId } = storeToRefs(templatesStore);
 const overlayState = getOverlayState();
