@@ -21,15 +21,23 @@ import {
 } from "@/types";
 import { isPresent } from "@/utils/optional";
 import { escapeRegex } from "@/utils/regex";
-import { captureAndCopyToClipboard, captureAndDownload } from "@/utils/screenshot";
+import {
+  captureAndCopyToClipboard,
+  captureAndDownload,
+} from "@/utils/screenshot";
 
 const DEFAULT_HIGHLIGHT_COLOR = "#ffff00";
 const DEFAULT_REDACTION_TEXT = "[REDACTED]";
 
 const sdk = useSDK();
 const { getActiveRequestId } = useEntry();
-const { getTabSettings, setTabSettingsFromTemplate, updateTabSettings, getSplitterSizes, setSplitterSizes } =
-  useTabsStore();
+const {
+  getTabSettings,
+  setTabSettingsFromTemplate,
+  updateTabSettings,
+  getSplitterSizes,
+  setSplitterSizes,
+} = useTabsStore();
 const templatesStore = useTemplatesStore();
 const { defaultTemplateId } = storeToRefs(templatesStore);
 const overlayState = getOverlayState();
@@ -43,6 +51,15 @@ const urlInfo = ref<{ url: string; sni: string | undefined }>({
   sni: undefined,
 });
 const contentPanelRef = ref<HTMLElement | undefined>(undefined);
+
+interface ContentPanelExposed {
+  clearSelectionsForCapture: () => void;
+  restoreSelectionsAfterCapture: () => void;
+}
+
+const contentPanelComponentRef = ref<ContentPanelExposed | undefined>(
+  undefined,
+);
 
 const isVisible = computed(() => overlayState.value.isOpen);
 const sessionId = computed(() => overlayState.value.sessionId);
@@ -133,16 +150,29 @@ function handleBackdropClick(event: MouseEvent): void {
   }
 }
 
+function delay(ms: number): Promise<void> {
+  // eslint-disable-next-line compat/compat
+  return new Promise((resolve) => {
+    setTimeout(resolve, ms);
+  });
+}
+
 async function handleSaveScreenshot(): Promise<void> {
   if (contentPanelRef.value === undefined) {
     sdk.window.showToast("Content panel not ready", { variant: "error" });
     return;
   }
-  const result = await captureAndDownload(contentPanelRef.value);
-  if (result.success) {
-    sdk.window.showToast("Screenshot saved!", { variant: "success" });
-  } else {
-    sdk.window.showToast(`Failed: ${result.error}`, { variant: "error" });
+  contentPanelComponentRef.value?.clearSelectionsForCapture();
+  await delay(50);
+  try {
+    const result = await captureAndDownload(contentPanelRef.value);
+    if (result.success) {
+      sdk.window.showToast("Screenshot saved!", { variant: "success" });
+    } else {
+      sdk.window.showToast(`Failed: ${result.error}`, { variant: "error" });
+    }
+  } finally {
+    contentPanelComponentRef.value?.restoreSelectionsAfterCapture();
   }
 }
 
@@ -151,13 +181,19 @@ async function handleCopyScreenshot(): Promise<void> {
     sdk.window.showToast("Content panel not ready", { variant: "error" });
     return;
   }
-  const result = await captureAndCopyToClipboard(contentPanelRef.value);
-  if (result.success) {
-    sdk.window.showToast("Screenshot copied to clipboard!", {
-      variant: "success",
-    });
-  } else {
-    sdk.window.showToast(`Failed: ${result.error}`, { variant: "error" });
+  contentPanelComponentRef.value?.clearSelectionsForCapture();
+  await delay(50);
+  try {
+    const result = await captureAndCopyToClipboard(contentPanelRef.value);
+    if (result.success) {
+      sdk.window.showToast("Screenshot copied to clipboard!", {
+        variant: "success",
+      });
+    } else {
+      sdk.window.showToast(`Failed: ${result.error}`, { variant: "error" });
+    }
+  } finally {
+    contentPanelComponentRef.value?.restoreSelectionsAfterCapture();
   }
 }
 
@@ -284,6 +320,7 @@ onUnmounted(() => {
             <div ref="contentPanelRef" class="flex flex-1 justify-center">
               <ContentPanel
                 v-if="isPresent(settings)"
+                ref="contentPanelComponentRef"
                 :settings="settings"
                 :request-raw="requestRaw"
                 :response-raw="responseRaw"
