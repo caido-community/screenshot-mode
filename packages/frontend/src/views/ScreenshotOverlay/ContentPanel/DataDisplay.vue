@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import type { EditorSelection } from "@codemirror/state";
 import Splitter from "primevue/splitter";
 import SplitterPanel from "primevue/splitterpanel";
 import { computed, nextTick, onMounted, onUnmounted, ref, watch } from "vue";
@@ -8,6 +9,9 @@ import { useSDK } from "@/plugins/sdk";
 import { Disposition, RuleTarget, type ScreenshotSettings } from "@/types";
 import { applyDecorations } from "@/utils/decorations";
 import { isPresent } from "@/utils/optional";
+
+let savedRequestSelection: EditorSelection | undefined = undefined;
+let savedResponseSelection: EditorSelection | undefined = undefined;
 
 const { requestRaw, responseRaw, settings, splitterSizes } = defineProps<{
   requestRaw: string;
@@ -239,14 +243,61 @@ onUnmounted(() => {
     responseEditorContainer.value.innerHTML = "";
   }
 });
+
+function clearSelectionsForCapture(): void {
+  const requestView = requestEditor.getEditorView();
+  const responseView = responseEditor.getEditorView();
+
+  savedRequestSelection = requestView.state.selection;
+  savedResponseSelection = responseView.state.selection;
+
+  requestView.dispatch({ selection: { anchor: 0 } });
+  responseView.dispatch({ selection: { anchor: 0 } });
+
+  requestView.contentDOM.blur();
+  responseView.contentDOM.blur();
+}
+
+function restoreSelectionsAfterCapture(): void {
+  const requestView = requestEditor.getEditorView();
+  const responseView = responseEditor.getEditorView();
+
+  if (savedRequestSelection) {
+    requestView.dispatch({ selection: savedRequestSelection });
+    savedRequestSelection = undefined;
+  }
+
+  if (savedResponseSelection) {
+    responseView.dispatch({ selection: savedResponseSelection });
+    savedResponseSelection = undefined;
+  }
+}
+
+defineExpose({
+  clearSelectionsForCapture,
+  restoreSelectionsAfterCapture,
+});
 </script>
 
 <template>
-  <Splitter :key="splitterKey" :layout="splitterLayout" class="flex-1 overflow-hidden" @resizeend="handleResizeEnd">
-    <SplitterPanel :size="splitterSizes[0]" :min-size="10" class="overflow-hidden">
+  <Splitter
+    :key="splitterKey"
+    :layout="splitterLayout"
+    class="flex-1 overflow-hidden"
+    @resizeend="handleResizeEnd"
+  >
+    <SplitterPanel
+      :size="splitterSizes[0]"
+      :min-size="10"
+      class="overflow-hidden"
+    >
       <div ref="requestEditorContainer" class="h-full w-full" />
     </SplitterPanel>
-    <SplitterPanel :size="splitterSizes[1]" :min-size="10" class="overflow-hidden">
+    <SplitterPanel
+      :size="splitterSizes[1]"
+      :min-size="10"
+      class="overflow-hidden"
+    >
       <div ref="responseEditorContainer" class="h-full w-full" />
     </SplitterPanel>
   </Splitter>
