@@ -58,28 +58,42 @@ const contentPanelComponentRef = ref<ContentPanelExposed | undefined>(
 
 const isVisible = computed(() => overlayState.value.isOpen);
 const sessionId = computed(() => overlayState.value.sessionId);
+const requestId = computed(() => overlayState.value.requestId);
+
+const settingsKey = computed(() => sessionId.value ?? requestId.value);
+
 const splitterSizes = computed(() => {
-  const sid = sessionId.value;
-  if (sid === undefined) return [50, 50] as [number, number];
-  return getSplitterSizes(sid);
+  const key = settingsKey.value;
+  if (key === undefined) return [50, 50] as [number, number];
+  return getSplitterSizes(key);
 });
 
 async function loadSessionData(): Promise<void> {
-  const sid = sessionId.value;
-  if (sid === undefined) {
+  const key = settingsKey.value;
+  if (key === undefined) {
     return;
   }
 
-  settings.value = getTabSettings(sid);
+  requestRaw.value = "";
+  responseRaw.value = "";
+  urlInfo.value = { url: "", sni: undefined };
+
+  settings.value = getTabSettings(key);
   selectedTemplateId.value =
-    getSelectedTemplateId(sid) ?? defaultTemplateId.value;
+    getSelectedTemplateId(key) ?? defaultTemplateId.value;
 
-  const session = sdk.replay.getCurrentSession();
-  if (session === undefined) {
-    return;
+  let activeRequestId: string | undefined;
+
+  if (requestId.value !== undefined) {
+    activeRequestId = requestId.value;
+  } else if (sessionId.value !== undefined) {
+    const session = sdk.replay.getCurrentSession();
+    if (session === undefined) {
+      return;
+    }
+    activeRequestId = await getActiveRequestId();
   }
 
-  const activeRequestId = await getActiveRequestId();
   if (activeRequestId === undefined) {
     return;
   }
@@ -107,32 +121,32 @@ async function loadSessionData(): Promise<void> {
 }
 
 function handleSettingsChange(newSettings: ScreenshotSettings): void {
-  const sid = sessionId.value;
-  if (sid === undefined) {
+  const key = settingsKey.value;
+  if (key === undefined) {
     return;
   }
 
-  settings.value = updateTabSettings(sid, newSettings);
+  settings.value = updateTabSettings(key, newSettings);
 }
 
 function handleTemplateChange(templateId: string): void {
-  const sid = sessionId.value;
-  if (sid === undefined) {
+  const key = settingsKey.value;
+  if (key === undefined) {
     return;
   }
 
   selectedTemplateId.value = templateId;
-  settings.value = setTabSettingsFromTemplate(sid, templateId);
-  setSelectedTemplateId(sid, templateId);
+  settings.value = setTabSettingsFromTemplate(key, templateId);
+  setSelectedTemplateId(key, templateId);
 }
 
 function handleResetToTemplate(): void {
-  const sid = sessionId.value;
-  if (sid === undefined) {
+  const key = settingsKey.value;
+  if (key === undefined) {
     return;
   }
 
-  settings.value = setTabSettingsFromTemplate(sid, selectedTemplateId.value);
+  settings.value = setTabSettingsFromTemplate(key, selectedTemplateId.value);
 }
 
 function handleKeydown(event: KeyboardEvent): void {
@@ -247,8 +261,8 @@ async function handleSaveAsNewTemplate(name: string): Promise<void> {
   const newTemplate = await createTemplate(name, settings.value);
   selectedTemplateId.value = newTemplate.id;
 
-  const sid = sessionId.value;
-  if (sid !== undefined) setSelectedTemplateId(sid, newTemplate.id);
+  const key = settingsKey.value;
+  if (key !== undefined) setSelectedTemplateId(key, newTemplate.id);
 
   sdk.window.showToast(`Template "${name}" created!`, { variant: "success" });
 }
@@ -269,7 +283,7 @@ async function handleUpdateCurrentTemplate(): Promise<void> {
 }
 
 watch(
-  () => overlayState.value.sessionId,
+  () => settingsKey.value,
   () => {
     if (overlayState.value.isOpen) {
       loadSessionData();

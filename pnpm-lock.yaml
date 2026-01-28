@@ -61,8 +61,8 @@ importers:
         version: 3.5.13(typescript@5.8.3)
     devDependencies:
       '@caido/sdk-frontend':
-        specifier: 0.54.1
-        version: 0.54.1(@ai-sdk/provider@2.0.0)(@codemirror/state@6.5.2)(@codemirror/view@6.36.6)(vue@3.5.13(typescript@5.8.3))
+        specifier: 0.55.1
+        version: 0.55.1(@ai-sdk/provider@2.0.0)(@codemirror/state@6.5.2)(@codemirror/view@6.36.6)(vue@3.5.13(typescript@5.8.3))
       '@codemirror/state':
         specifier: ^6.5.2
         version: 6.5.2
@@ -122,10 +122,10 @@ packages:
     peerDependencies:
       primevue: 4.1.0
 
-  '@caido/sdk-frontend@0.54.1':
-    resolution: {integrity: sha512-juLWVTTAb8Klcyafs1t8M4hhD9gNNDsm9XnMMEW3GO96upW/JIZjRZH3IHbD5CL4ihvjL34BznHKHm2P3ZG3aw==}
+  '@caido/sdk-frontend@0.55.1':
+    resolution: {integrity: sha512-AJqpqA+Dlh3jZvYKLyVIb8HQIOT5TJLrDQ1JBr0zhIopptSGqIEZaY2BADYOq667HOwS3Xi/jKuVlboTSjOFnA==}
     peerDependencies:
-      '@ai-sdk/provider': ^2.0.0
+      '@ai-sdk/provider': ^3.0.1
       '@codemirror/state': ^6.0.0
       '@codemirror/view': ^6.0.0
       vue: ^3.0.0
@@ -2698,7 +2698,7 @@ snapshots:
     dependencies:
       primevue: 4.1.0(vue@3.5.13(typescript@5.8.3))
 
-  '@caido/sdk-frontend@0.54.1(@ai-sdk/provider@2.0.0)(@codemirror/state@6.5.2)(@codemirror/view@6.36.6)(vue@3.5.13(typescript@5.8.3))':
+  '@caido/sdk-frontend@0.55.1(@ai-sdk/provider@2.0.0)(@codemirror/state@6.5.2)(@codemirror/view@6.36.6)(vue@3.5.13(typescript@5.8.3))':
     dependencies:
       '@ai-sdk/provider': 2.0.0
       '@codemirror/state': 6.5.2
