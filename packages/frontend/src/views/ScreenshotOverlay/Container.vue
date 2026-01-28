@@ -21,17 +21,20 @@ import {
 } from "@/types";
 import { isPresent } from "@/utils/optional";
 import { escapeRegex } from "@/utils/regex";
-import { captureAndDownload } from "@/utils/screenshot";
+import {
+  captureAndCopyToClipboard,
+  captureAndDownload,
+} from "@/utils/screenshot";
 
 const DEFAULT_HIGHLIGHT_COLOR = "#ffff00";
 const DEFAULT_REDACTION_TEXT = "[REDACTED]";
 
 const sdk = useSDK();
 const { getActiveRequestId } = useEntry();
-const { getTabSettings, setTabSettingsFromTemplate, updateTabSettings, getSplitterSizes, setSplitterSizes } =
-  useTabsStore();
+const { getTabSettings, setTabSettingsFromTemplate, updateTabSettings,  getSplitterSizes, setSplitterSizes, getSelectedTemplateId, setSelectedTemplateId} = useTabsStore();
 const templatesStore = useTemplatesStore();
 const { defaultTemplateId } = storeToRefs(templatesStore);
+const { createTemplate, updateTemplate } = templatesStore;
 const overlayState = getOverlayState();
 
 const settings = ref<ScreenshotSettings | undefined>(undefined);
@@ -43,6 +46,15 @@ const urlInfo = ref<{ url: string; sni: string | undefined }>({
   sni: undefined,
 });
 const contentPanelRef = ref<HTMLElement | undefined>(undefined);
+
+interface ContentPanelExposed {
+  clearSelectionsForCapture: () => void;
+  restoreSelectionsAfterCapture: () => void;
+}
+
+const contentPanelComponentRef = ref<ContentPanelExposed | undefined>(
+  undefined,
+);
 
 const isVisible = computed(() => overlayState.value.isOpen);
 const sessionId = computed(() => overlayState.value.sessionId);
@@ -59,7 +71,8 @@ async function loadSessionData(): Promise<void> {
   }
 
   settings.value = getTabSettings(sid);
-  selectedTemplateId.value = defaultTemplateId.value;
+  selectedTemplateId.value =
+    getSelectedTemplateId(sid) ?? defaultTemplateId.value;
 
   const session = sdk.replay.getCurrentSession();
   if (session === undefined) {
@@ -110,6 +123,7 @@ function handleTemplateChange(templateId: string): void {
 
   selectedTemplateId.value = templateId;
   settings.value = setTabSettingsFromTemplate(sid, templateId);
+  setSelectedTemplateId(sid, templateId);
 }
 
 function handleResetToTemplate(): void {
@@ -133,16 +147,50 @@ function handleBackdropClick(event: MouseEvent): void {
   }
 }
 
+function delay(ms: number): Promise<void> {
+  // eslint-disable-next-line compat/compat
+  return new Promise((resolve) => {
+    setTimeout(resolve, ms);
+  });
+}
+
 async function handleSaveScreenshot(): Promise<void> {
   if (contentPanelRef.value === undefined) {
     sdk.window.showToast("Content panel not ready", { variant: "error" });
     return;
   }
-  const result = await captureAndDownload(contentPanelRef.value);
-  if (result.success) {
-    sdk.window.showToast("Screenshot saved!", { variant: "success" });
-  } else {
-    sdk.window.showToast(`Failed: ${result.error}`, { variant: "error" });
+  contentPanelComponentRef.value?.clearSelectionsForCapture();
+  await delay(50);
+  try {
+    const result = await captureAndDownload(contentPanelRef.value);
+    if (result.success) {
+      sdk.window.showToast("Screenshot saved!", { variant: "success" });
+    } else {
+      sdk.window.showToast(`Failed: ${result.error}`, { variant: "error" });
+    }
+  } finally {
+    contentPanelComponentRef.value?.restoreSelectionsAfterCapture();
+  }
+}
+
+async function handleCopyScreenshot(): Promise<void> {
+  if (contentPanelRef.value === undefined) {
+    sdk.window.showToast("Content panel not ready", { variant: "error" });
+    return;
+  }
+  contentPanelComponentRef.value?.clearSelectionsForCapture();
+  await delay(50);
+  try {
+    const result = await captureAndCopyToClipboard(contentPanelRef.value);
+    if (result.success) {
+      sdk.window.showToast("Screenshot copied to clipboard!", {
+        variant: "success",
+      });
+    } else {
+      sdk.window.showToast(`Failed: ${result.error}`, { variant: "error" });
+    }
+  } finally {
+    contentPanelComponentRef.value?.restoreSelectionsAfterCapture();
   }
 }
 
@@ -192,6 +240,34 @@ function handleAddHiddenHeader(headerName: string): void {
   });
 }
 
+async function handleSaveAsNewTemplate(name: string): Promise<void> {
+  if (!isPresent(settings.value)) return;
+  if (name === "") return;
+
+  const newTemplate = await createTemplate(name, settings.value);
+  selectedTemplateId.value = newTemplate.id;
+
+  const sid = sessionId.value;
+  if (sid !== undefined) setSelectedTemplateId(sid, newTemplate.id);
+
+  sdk.window.showToast(`Template "${name}" created!`, { variant: "success" });
+}
+
+async function handleUpdateCurrentTemplate(): Promise<void> {
+  if (!isPresent(settings.value)) return;
+  if (selectedTemplateId.value === "") return;
+
+  const updated = await updateTemplate(selectedTemplateId.value, {
+    settings: settings.value,
+  });
+
+  if (updated) {
+    sdk.window.showToast(`Template updated!`, { variant: "success" });
+  } else {
+    sdk.window.showToast("Failed to update template", { variant: "error" });
+  }
+}
+
 watch(
   () => overlayState.value.sessionId,
   () => {
@@ -236,6 +312,12 @@ onUnmounted(() => {
               size="small"
               @click="handleSaveScreenshot"
             />
+            <Button
+              label="Copy To Clipboard"
+              icon="fas fa-copy"
+              size="small"
+              @click="handleCopyScreenshot"
+            />
           </div>
           <button
             class="rounded p-1 text-surface-400 transition-colors hover:bg-surface-700 hover:text-surface-200"
@@ -256,6 +338,8 @@ onUnmounted(() => {
               @update="handleSettingsChange"
               @template-change="handleTemplateChange"
               @reset-to-template="handleResetToTemplate"
+              @save-as-new-template="handleSaveAsNewTemplate"
+              @update-current-template="handleUpdateCurrentTemplate"
             />
           </div>
 
@@ -263,6 +347,7 @@ onUnmounted(() => {
             <div ref="contentPanelRef" class="flex flex-1 justify-center">
               <ContentPanel
                 v-if="isPresent(settings)"
+                ref="contentPanelComponentRef"
                 :settings="settings"
                 :request-raw="requestRaw"
                 :response-raw="responseRaw"
