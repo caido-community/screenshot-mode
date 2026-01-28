@@ -31,7 +31,7 @@ const DEFAULT_REDACTION_TEXT = "[REDACTED]";
 
 const sdk = useSDK();
 const { getActiveRequestId } = useEntry();
-const { getTabSettings, setTabSettingsFromTemplate, updateTabSettings, getSplitterSizes, setSplitterSizes } = useTabsStore();
+const { getTabSettings, setTabSettingsFromTemplate, updateTabSettings,  getSplitterSizes, setSplitterSizes, getSelectedTemplateId, setSelectedTemplateId} = useTabsStore();
 const templatesStore = useTemplatesStore();
 const { defaultTemplateId } = storeToRefs(templatesStore);
 const overlayState = getOverlayState();
@@ -70,7 +70,8 @@ async function loadSessionData(): Promise<void> {
   }
 
   settings.value = getTabSettings(sid);
-  selectedTemplateId.value = defaultTemplateId.value;
+  selectedTemplateId.value =
+    getSelectedTemplateId(sid) ?? defaultTemplateId.value;
 
   const session = sdk.replay.getCurrentSession();
   if (session === undefined) {
@@ -121,6 +122,7 @@ function handleTemplateChange(templateId: string): void {
 
   selectedTemplateId.value = templateId;
   settings.value = setTabSettingsFromTemplate(sid, templateId);
+  setSelectedTemplateId(sid, templateId);
 }
 
 function handleResetToTemplate(): void {
