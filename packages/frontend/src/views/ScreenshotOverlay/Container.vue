@@ -34,6 +34,7 @@ const { getActiveRequestId } = useEntry();
 const { getTabSettings, setTabSettingsFromTemplate, updateTabSettings,  getSplitterSizes, setSplitterSizes, getSelectedTemplateId, setSelectedTemplateId} = useTabsStore();
 const templatesStore = useTemplatesStore();
 const { defaultTemplateId } = storeToRefs(templatesStore);
+const { createTemplate, updateTemplate } = templatesStore;
 const overlayState = getOverlayState();
 
 const settings = ref<ScreenshotSettings | undefined>(undefined);
@@ -239,6 +240,34 @@ function handleAddHiddenHeader(headerName: string): void {
   });
 }
 
+async function handleSaveAsNewTemplate(name: string): Promise<void> {
+  if (!isPresent(settings.value)) return;
+  if (name === "") return;
+
+  const newTemplate = await createTemplate(name, settings.value);
+  selectedTemplateId.value = newTemplate.id;
+
+  const sid = sessionId.value;
+  if (sid !== undefined) setSelectedTemplateId(sid, newTemplate.id);
+
+  sdk.window.showToast(`Template "${name}" created!`, { variant: "success" });
+}
+
+async function handleUpdateCurrentTemplate(): Promise<void> {
+  if (!isPresent(settings.value)) return;
+  if (selectedTemplateId.value === "") return;
+
+  const updated = await updateTemplate(selectedTemplateId.value, {
+    settings: settings.value,
+  });
+
+  if (updated) {
+    sdk.window.showToast(`Template updated!`, { variant: "success" });
+  } else {
+    sdk.window.showToast("Failed to update template", { variant: "error" });
+  }
+}
+
 watch(
   () => overlayState.value.sessionId,
   () => {
@@ -309,6 +338,8 @@ onUnmounted(() => {
               @update="handleSettingsChange"
               @template-change="handleTemplateChange"
               @reset-to-template="handleResetToTemplate"
+              @save-as-new-template="handleSaveAsNewTemplate"
+              @update-current-template="handleUpdateCurrentTemplate"
             />
           </div>
 

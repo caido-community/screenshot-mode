@@ -2,10 +2,11 @@
 import { storeToRefs } from "pinia";
 import Button from "primevue/button";
 import InputNumber from "primevue/inputnumber";
+import InputText from "primevue/inputtext";
 import Select from "primevue/select";
 import SelectButton from "primevue/selectbutton";
 import Textarea from "primevue/textarea";
-import { computed } from "vue";
+import { computed, ref } from "vue";
 
 import { HighlightRulesList } from "@/components/HighlightRulesList";
 import { RedactionRulesList } from "@/components/RedactionRulesList";
@@ -33,7 +34,12 @@ const emit = defineEmits<{
   update: [settings: ScreenshotSettings];
   templateChange: [templateId: string];
   resetToTemplate: [];
+  saveAsNewTemplate: [name: string];
+  updateCurrentTemplate: [];
 }>();
+
+const isCreatingTemplate = ref(false);
+const newTemplateName = ref("");
 
 const templatesStore = useTemplatesStore();
 const { templates } = storeToRefs(templatesStore);
@@ -169,6 +175,64 @@ function handleAddRedaction(): void {
           title="Reset to template defaults"
           @click="emit('resetToTemplate')"
         />
+      </div>
+      <div v-if="!isCreatingTemplate" class="mt-2 flex items-center gap-2">
+        <Button
+          label="Save As New"
+          icon="fas fa-plus"
+          size="small"
+          severity="secondary"
+          class="flex-1"
+          @click="
+            isCreatingTemplate = true;
+            newTemplateName = '';
+          "
+        />
+        <Button
+          label="Update"
+          icon="fas fa-save"
+          size="small"
+          severity="secondary"
+          class="flex-1"
+          title="Update selected template with current settings"
+          @click="emit('updateCurrentTemplate')"
+        />
+      </div>
+      <div v-else class="mt-2 flex flex-col gap-2">
+        <InputText
+          v-model="newTemplateName"
+          class="w-full"
+          placeholder="Enter template name"
+          @keydown.enter="
+            () => {
+              if (newTemplateName.trim() !== '') {
+                emit('saveAsNewTemplate', newTemplateName.trim());
+                isCreatingTemplate = false;
+              }
+            }
+          "
+        />
+        <div class="flex gap-2">
+          <Button
+            label="Cancel"
+            size="small"
+            severity="secondary"
+            class="flex-1"
+            @click="isCreatingTemplate = false"
+          />
+          <Button
+            label="Create"
+            size="small"
+            class="flex-1"
+            :disabled="newTemplateName.trim() === ''"
+            @click="
+              () => {
+                emit('saveAsNewTemplate', newTemplateName.trim());
+                isCreatingTemplate = false;
+              }
+            "
+          />
+        </div>
       </div>
     </div>
 
