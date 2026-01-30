@@ -25,12 +25,39 @@ function downloadDataUrl(dataUrl: string): void {
   link.click();
 }
 
+function dataUrlToBlob(dataUrl: string): Blob {
+  const parts = dataUrl.split(",");
+  const mimeMatch = parts[0]?.match(/:(.*?);/);
+  const mime = mimeMatch?.[1] ?? "image/png";
+  const base64Data = parts[1] ?? "";
+  const binary = atob(base64Data);
+  const array = new Uint8Array(binary.length);
+  for (let i = 0; i < binary.length; i++) {
+    array[i] = binary.charCodeAt(i);
+  }
+  return new Blob([array], { type: mime });
+}
+
 export async function captureAndDownload(
   element: HTMLElement,
 ): Promise<{ success: boolean; error?: string }> {
   try {
     const dataUrl = await renderElement(element);
     downloadDataUrl(dataUrl);
+    return { success: true };
+  } catch (err) {
+    const message = err instanceof Error ? err.message : "Unknown error";
+    return { success: false, error: message };
+  }
+}
+
+export async function captureAndCopyToClipboard(
+  element: HTMLElement,
+): Promise<{ success: boolean; error?: string }> {
+  try {
+    const dataUrl = await renderElement(element);
+    const blob = dataUrlToBlob(dataUrl);
+    await navigator.clipboard.write([new ClipboardItem({ "image/png": blob })]);
     return { success: true };
   } catch (err) {
     const message = err instanceof Error ? err.message : "Unknown error";

@@ -11,7 +11,8 @@ const WIDTH_PRESETS = {
   [WidthMode.Letter]: 612,
 } as const;
 
-const { settings, requestRaw, responseRaw, url, sni, splitterSizes } =  defineProps<{
+const { settings, requestRaw, responseRaw, url, sni, splitterSizes } =
+  defineProps<{
     settings: ScreenshotSettings;
     requestRaw: string;
     responseRaw: string;

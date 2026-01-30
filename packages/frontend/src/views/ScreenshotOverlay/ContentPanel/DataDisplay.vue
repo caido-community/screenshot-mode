@@ -242,11 +242,24 @@ onUnmounted(() => {
 </script>
 
 <template>
-  <Splitter :key="splitterKey" :layout="splitterLayout" class="flex-1 overflow-hidden" @resizeend="handleResizeEnd">
-    <SplitterPanel :size="splitterSizes[0]" :min-size="10" class="overflow-hidden">
+  <Splitter
+    :key="splitterKey"
+    :layout="splitterLayout"
+    class="flex-1 overflow-hidden"
+    @resizeend="handleResizeEnd"
+  >
+    <SplitterPanel
+      :size="splitterSizes[0]"
+      :min-size="10"
+      class="overflow-hidden"
+    >
       <div ref="requestEditorContainer" class="h-full w-full" />
     </SplitterPanel>
-    <SplitterPanel :size="splitterSizes[1]" :min-size="10" class="overflow-hidden">
+    <SplitterPanel
+      :size="splitterSizes[1]"
+      :min-size="10"
+      class="overflow-hidden"
+    >
       <div ref="responseEditorContainer" class="h-full w-full" />
     </SplitterPanel>
   </Splitter>
