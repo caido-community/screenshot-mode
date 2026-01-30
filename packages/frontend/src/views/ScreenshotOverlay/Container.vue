@@ -6,6 +6,7 @@ import { computed, onMounted, onUnmounted, ref, watch } from "vue";
 import { ContentPanel } from "./ContentPanel";
 import SettingsPanel from "./SettingsPanel.vue";
 import { useEntry } from "./useEntry";
+import { useForm, type ContentPanelExposed } from "./useForm";
 
 import { useSDK } from "@/plugins/sdk";
 import { closeOverlay, getOverlayState } from "@/stores/overlay";
@@ -31,10 +32,9 @@ const DEFAULT_REDACTION_TEXT = "[REDACTED]";
 
 const sdk = useSDK();
 const { getActiveRequestId } = useEntry();
-const { getTabSettings, setTabSettingsFromTemplate, updateTabSettings,  getSplitterSizes, setSplitterSizes, getSelectedTemplateId, setSelectedTemplateId} = useTabsStore();
+const { getTabSettings, setTabSettingsFromTemplate, updateTabSettings, getSplitterSizes, setSplitterSizes, getSelectedTemplateId, setSelectedTemplateId } = useTabsStore();
 const templatesStore = useTemplatesStore();
 const { defaultTemplateId } = storeToRefs(templatesStore);
-const { createTemplate, updateTemplate } = templatesStore;
 const overlayState = getOverlayState();
 
 const settings = ref<ScreenshotSettings | undefined>(undefined);
@@ -47,10 +47,6 @@ const urlInfo = ref<{ url: string; sni: string | undefined }>({
 });
 const contentPanelRef = ref<HTMLElement | undefined>(undefined);
 
-interface ContentPanelExposed {
-  clearSelectionsForCapture: () => void;
-  restoreSelectionsAfterCapture: () => void;
-}
 
 const contentPanelComponentRef = ref<ContentPanelExposed | undefined>(
   undefined,
@@ -58,6 +54,7 @@ const contentPanelComponentRef = ref<ContentPanelExposed | undefined>(
 
 const isVisible = computed(() => overlayState.value.isOpen);
 const sessionId = computed(() => overlayState.value.sessionId);
+const { handleSaveAsNewTemplate, handleUpdateCurrentTemplate } = useForm(settings, sessionId, selectedTemplateId);
 const splitterSizes = computed(() => {
   const sid = sessionId.value;
   if (sid === undefined) return [50, 50] as [number, number];
@@ -154,43 +151,26 @@ function delay(ms: number): Promise<void> {
   });
 }
 
-async function handleSaveScreenshot(): Promise<void> {
+async function handleScreenshot(action: "disk" | "clipboard"): Promise<void> {
   if (contentPanelRef.value === undefined) {
     sdk.window.showToast("Content panel not ready", { variant: "error" });
     return;
   }
   contentPanelComponentRef.value?.clearSelectionsForCapture();
   await delay(50);
-  try {
-    const result = await captureAndDownload(contentPanelRef.value);
-    if (result.success) {
-      sdk.window.showToast("Screenshot saved!", { variant: "success" });
-    } else {
-      sdk.window.showToast(`Failed: ${result.error}`, { variant: "error" });
-    }
-  } finally {
-    contentPanelComponentRef.value?.restoreSelectionsAfterCapture();
-  }
-}
 
-async function handleCopyScreenshot(): Promise<void> {
-  if (contentPanelRef.value === undefined) {
-    sdk.window.showToast("Content panel not ready", { variant: "error" });
-    return;
+  let result;
+  if (action === "disk") {
+    result = await captureAndDownload(contentPanelRef.value);
+  } else {
+    result = await captureAndCopyToClipboard(contentPanelRef.value);
   }
-  contentPanelComponentRef.value?.clearSelectionsForCapture();
-  await delay(50);
-  try {
-    const result = await captureAndCopyToClipboard(contentPanelRef.value);
-    if (result.success) {
-      sdk.window.showToast("Screenshot copied to clipboard!", {
-        variant: "success",
-      });
-    } else {
-      sdk.window.showToast(`Failed: ${result.error}`, { variant: "error" });
-    }
-  } finally {
-    contentPanelComponentRef.value?.restoreSelectionsAfterCapture();
+
+  if (result.success) {
+    const message = action === "disk" ? "Screenshot saved!" : "Screenshot copied to clipboard!";
+    sdk.window.showToast(message, { variant: "success" });
+  } else {
+    sdk.window.showToast(`Failed: ${result.error}`, { variant: "error" });
   }
 }
 
@@ -240,33 +220,6 @@ function handleAddHiddenHeader(headerName: string): void {
   });
 }
 
-async function handleSaveAsNewTemplate(name: string): Promise<void> {
-  if (!isPresent(settings.value)) return;
-  if (name === "") return;
-
-  const newTemplate = await createTemplate(name, settings.value);
-  selectedTemplateId.value = newTemplate.id;
-
-  const sid = sessionId.value;
-  if (sid !== undefined) setSelectedTemplateId(sid, newTemplate.id);
-
-  sdk.window.showToast(`Template "${name}" created!`, { variant: "success" });
-}
-
-async function handleUpdateCurrentTemplate(): Promise<void> {
-  if (!isPresent(settings.value)) return;
-  if (selectedTemplateId.value === "") return;
-
-  const updated = await updateTemplate(selectedTemplateId.value, {
-    settings: settings.value,
-  });
-
-  if (updated) {
-    sdk.window.showToast(`Template updated!`, { variant: "success" });
-  } else {
-    sdk.window.showToast("Failed to update template", { variant: "error" });
-  }
-}
 
 watch(
   () => overlayState.value.sessionId,
@@ -293,46 +246,39 @@ onUnmounted(() => {
   <Teleport to="body">
     <div
       v-if="isVisible"
-      class="fixed inset-0 z-[9999] flex items-center justify-center bg-black/60"
+      class="fixed inset-0 z-[500] flex items-center justify-center bg-black/60"
       @click="handleBackdropClick"
     >
       <div
-        class="flex h-[90vh] w-[95vw] flex-col overflow-hidden rounded-lg border border-surface-600 bg-surface-800 shadow-2xl"
-      >
-        <div
-          class="flex items-center justify-between border-b border-surface-600 px-4 py-3"
-        >
+        class="flex h-[90vh] w-[95vw] flex-col overflow-hidden rounded-lg border border-surface-600 bg-surface-800 shadow-2xl">
+        <div class="flex items-center justify-between border-b border-surface-600 px-4 py-3">
           <div class="flex items-center gap-3">
             <h2 class="text-lg font-semibold text-surface-50">
               Screenshot Mode
             </h2>
             <Button
-              label="Save Screenshot"
-              icon="fas fa-download"
-              size="small"
-              @click="handleSaveScreenshot"
-            />
+             label="Save Screenshot"
+             icon="fas fa-download"
+             size="small"
+             @click="handleScreenshot('disk')" />
             <Button
-              label="Copy To Clipboard"
-              icon="fas fa-copy"
-              size="small"
-              @click="handleCopyScreenshot"
-            />
+             label="Copy To Clipboard"
+             icon="fas fa-copy"
+             size="small"
+             @click="handleScreenshot('clipboard')" />
           </div>
-          <button
-            class="rounded p-1 text-surface-400 transition-colors hover:bg-surface-700 hover:text-surface-200"
-            @click="closeOverlay"
-          >
+          <button class="rounded p-1 text-surface-400 transition-colors hover:bg-surface-700 hover:text-surface-200"
+            @click="closeOverlay">
             <i class="fas fa-times text-lg" />
           </button>
         </div>
 
         <div class="flex flex-1 overflow-hidden">
           <div
-            class="w-1/4 min-w-64 overflow-y-auto border-r border-surface-600 p-4"
+           class="w-1/4 min-w-64 overflow-y-auto border-r border-surface-600 p-4"
           >
             <SettingsPanel
-              v-if="isPresent(settings)"
+            v-if="isPresent(settings)"
               :settings="settings"
               :selected-template-id="selectedTemplateId"
               @update="handleSettingsChange"
@@ -346,24 +292,23 @@ onUnmounted(() => {
           <div class="flex flex-1 bg-surface-900">
             <div ref="contentPanelRef" class="flex flex-1 justify-center">
               <ContentPanel
-                v-if="isPresent(settings)"
-                ref="contentPanelComponentRef"
-                :settings="settings"
-                :request-raw="requestRaw"
-                :response-raw="responseRaw"
-                :url="urlInfo.url"
-                :sni="urlInfo.sni"
-                :splitter-sizes="splitterSizes"
-                @add-highlight="handleAddHighlight"
-                @add-redaction="handleAddRedaction"
-                @add-hidden-header="handleAddHiddenHeader"
-                @update-splitter-sizes="
+              v-if="isPresent(settings)"
+               ref="contentPanelComponentRef"
+               :settings="settings"
+               :request-raw="requestRaw" 
+               :response-raw="responseRaw" 
+               :url="urlInfo.url" 
+               :sni="urlInfo.sni"
+               :splitter-sizes="splitterSizes" 
+               @add-highlight="handleAddHighlight" 
+               @add-redaction="handleAddRedaction"
+               @add-hidden-header="handleAddHiddenHeader" 
+               @update-splitter-sizes="
                   (sizes) => {
                     const sid = sessionId;
                     if (sid) setSplitterSizes(sid, sizes);
                   }
-                "
-              />
+                " />
             </div>
           </div>
         </div>
