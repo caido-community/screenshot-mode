@@ -12,6 +12,7 @@ export const useTabsStore = defineStore("tabs", () => {
 
   const tabSettings = ref(new Map<string, ScreenshotSettings>());
   const tabSplitterSizes = ref(new Map<string, [number, number]>());
+  const tabSelectedTemplateId = ref(new Map<string, string>());
 
   const getTabSettings = (sessionId: string): ScreenshotSettings => {
     const existing = tabSettings.value.get(sessionId);
@@ -57,11 +58,23 @@ export const useTabsStore = defineStore("tabs", () => {
     tabSplitterSizes.value.set(sessionId, sizes);
   };
 
+  const getSelectedTemplateId = (sessionId: string): string | undefined => {
+    return tabSelectedTemplateId.value.get(sessionId);
+  };
+  const setSelectedTemplateId = (
+    sessionId: string,
+    templateId: string,
+  ): void => {
+    tabSelectedTemplateId.value.set(sessionId, templateId);
+  };
+
   return {
     getTabSettings,
     updateTabSettings,
     setTabSettingsFromTemplate,
     getSplitterSizes,
     setSplitterSizes,
+    getSelectedTemplateId,
+    setSelectedTemplateId,
   };
 });
