@@ -6,6 +6,7 @@ import { computed, onMounted, onUnmounted, ref, watch } from "vue";
 import { ContentPanel } from "./ContentPanel";
 import SettingsPanel from "./SettingsPanel.vue";
 import { useEntry } from "./useEntry";
+import { type ContentPanelExposed, useForm } from "./useForm";
 
 import { useSDK } from "@/plugins/sdk";
 import { closeOverlay, getOverlayState } from "@/stores/overlay";
@@ -31,7 +32,15 @@ const DEFAULT_REDACTION_TEXT = "[REDACTED]";
 
 const sdk = useSDK();
 const { getActiveRequestId } = useEntry();
-const { getTabSettings, setTabSettingsFromTemplate, updateTabSettings,  getSplitterSizes, setSplitterSizes, getSelectedTemplateId, setSelectedTemplateId} = useTabsStore();
+const {
+  getTabSettings,
+  setTabSettingsFromTemplate,
+  updateTabSettings,
+  getSplitterSizes,
+  setSplitterSizes,
+  getSelectedTemplateId,
+  setSelectedTemplateId,
+} = useTabsStore();
 const templatesStore = useTemplatesStore();
 const { defaultTemplateId } = storeToRefs(templatesStore);
 const overlayState = getOverlayState();
@@ -46,17 +55,17 @@ const urlInfo = ref<{ url: string; sni: string | undefined }>({
 });
 const contentPanelRef = ref<HTMLElement | undefined>(undefined);
 
-interface ContentPanelExposed {
-  clearSelectionsForCapture: () => void;
-  restoreSelectionsAfterCapture: () => void;
-}
-
 const contentPanelComponentRef = ref<ContentPanelExposed | undefined>(
   undefined,
 );
 
 const isVisible = computed(() => overlayState.value.isOpen);
 const sessionId = computed(() => overlayState.value.sessionId);
+const { handleSaveAsNewTemplate, handleUpdateCurrentTemplate } = useForm(
+  settings,
+  sessionId,
+  selectedTemplateId,
+);
 const splitterSizes = computed(() => {
   const sid = sessionId.value;
   if (sid === undefined) return [50, 50] as [number, number];
@@ -153,43 +162,29 @@ function delay(ms: number): Promise<void> {
   });
 }
 
-async function handleSaveScreenshot(): Promise<void> {
+async function handleScreenshot(action: "disk" | "clipboard"): Promise<void> {
   if (contentPanelRef.value === undefined) {
     sdk.window.showToast("Content panel not ready", { variant: "error" });
     return;
   }
   contentPanelComponentRef.value?.clearSelectionsForCapture();
   await delay(50);
-  try {
-    const result = await captureAndDownload(contentPanelRef.value);
-    if (result.success) {
-      sdk.window.showToast("Screenshot saved!", { variant: "success" });
-    } else {
-      sdk.window.showToast(`Failed: ${result.error}`, { variant: "error" });
-    }
-  } finally {
-    contentPanelComponentRef.value?.restoreSelectionsAfterCapture();
-  }
-}
 
-async function handleCopyScreenshot(): Promise<void> {
-  if (contentPanelRef.value === undefined) {
-    sdk.window.showToast("Content panel not ready", { variant: "error" });
-    return;
+  let result;
+  if (action === "disk") {
+    result = await captureAndDownload(contentPanelRef.value);
+  } else {
+    result = await captureAndCopyToClipboard(contentPanelRef.value);
   }
-  contentPanelComponentRef.value?.clearSelectionsForCapture();
-  await delay(50);
-  try {
-    const result = await captureAndCopyToClipboard(contentPanelRef.value);
-    if (result.success) {
-      sdk.window.showToast("Screenshot copied to clipboard!", {
-        variant: "success",
-      });
-    } else {
-      sdk.window.showToast(`Failed: ${result.error}`, { variant: "error" });
-    }
-  } finally {
-    contentPanelComponentRef.value?.restoreSelectionsAfterCapture();
+
+  if (result.success) {
+    const message =
+      action === "disk"
+        ? "Screenshot saved!"
+        : "Screenshot copied to clipboard!";
+    sdk.window.showToast(message, { variant: "success" });
+  } else {
+    sdk.window.showToast(`Failed: ${result.error}`, { variant: "error" });
   }
 }
 
@@ -264,7 +259,7 @@ onUnmounted(() => {
   <Teleport to="body">
     <div
       v-if="isVisible"
-      class="fixed inset-0 z-[9999] flex items-center justify-center bg-black/60"
+      class="fixed inset-0 z-[500] flex items-center justify-center bg-black/60"
       @click="handleBackdropClick"
     >
       <div
@@ -281,13 +276,13 @@ onUnmounted(() => {
               label="Save Screenshot"
               icon="fas fa-download"
               size="small"
-              @click="handleSaveScreenshot"
+              @click="handleScreenshot('disk')"
             />
             <Button
               label="Copy To Clipboard"
               icon="fas fa-copy"
               size="small"
-              @click="handleCopyScreenshot"
+              @click="handleScreenshot('clipboard')"
             />
           </div>
           <button
@@ -309,6 +304,8 @@ onUnmounted(() => {
               @update="handleSettingsChange"
               @template-change="handleTemplateChange"
               @reset-to-template="handleResetToTemplate"
+              @save-as-new-template="handleSaveAsNewTemplate"
+              @update-current-template="handleUpdateCurrentTemplate"
             />
           </div>
 
