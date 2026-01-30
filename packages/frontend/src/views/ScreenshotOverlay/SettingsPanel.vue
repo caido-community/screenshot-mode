@@ -1,12 +1,12 @@
 <script setup lang="ts">
 import { storeToRefs } from "pinia";
 import Button from "primevue/button";
+import ButtonGroup from "primevue/buttongroup";
 import InputText from "primevue/inputtext";
-import Popover from "primevue/popover";
 import Menu from "primevue/menu";
+import Popover from "primevue/popover";
 import Select from "primevue/select";
 import SelectButton from "primevue/selectbutton";
-import ButtonGroup from "primevue/buttongroup";
 import Textarea from "primevue/textarea";
 import { computed, ref } from "vue";
 
@@ -40,9 +40,8 @@ const emit = defineEmits<{
   updateCurrentTemplate: [];
 }>();
 
-const op = ref<any>(null);
+const op = ref<InstanceType<typeof Popover> | undefined>(undefined);
 const newTemplateName = ref("");
-
 
 const templatesStore = useTemplatesStore();
 const { templates } = storeToRefs(templatesStore);
@@ -155,30 +154,30 @@ function handleAddRedaction(): void {
   });
 }
 
-const menu = ref<any>(null);
+const menu = ref<InstanceType<typeof Menu> | undefined>(undefined);
 const menuItems = [
   {
     label: "Save As New Template",
     icon: "fas fa-plus",
-    command: (event: any) => {
+    command: (event: { originalEvent: Event }) => {
       toggleCreatePopover(event.originalEvent);
     },
   },
 ];
 
 function toggleMenu(event: Event) {
-  menu.value.toggle(event);
+  menu.value?.toggle(event);
 }
 
 function toggleCreatePopover(event: Event) {
   newTemplateName.value = "";
-  op.value.toggle(event);
+  op.value?.toggle(event);
 }
 
 function createTemplate() {
-  if (newTemplateName.value.trim() !== '') {
-    emit('saveAsNewTemplate', newTemplateName.value.trim());
-    op.value.hide();
+  if (newTemplateName.value.trim() !== "") {
+    emit("saveAsNewTemplate", newTemplateName.value.trim());
+    op.value?.hide();
   }
 }
 </script>
@@ -190,23 +189,53 @@ function createTemplate() {
         Template
       </label>
       <div class="flex items-center gap-2">
-        <Select v-model="selectedTemplate" :options="templates" :option-label="getTemplateLabel" option-value="id"
-          class="flex-1" append-to="self" />
-        <Button icon="fas fa-rotate-right" size="small" severity="secondary" title="Reset to template defaults"
-          @click="emit('resetToTemplate')" />
+        <Select
+          v-model="selectedTemplate"
+          :options="templates"
+          :option-label="getTemplateLabel"
+          option-value="id"
+          class="flex-1"
+          append-to="self"
+        />
+        <Button
+          icon="fas fa-rotate-right"
+          size="small"
+          severity="secondary"
+          title="Reset to template defaults"
+          @click="emit('resetToTemplate')"
+        />
 
         <ButtonGroup>
-          <Button label="Update" icon="fas fa-save" size="small" title="Update current template"
-            @click="emit('updateCurrentTemplate')" />
-          <Button icon="fas fa-caret-down" size="small" title="Template actions" @click="toggleMenu" />
+          <Button
+            label="Update"
+            icon="fas fa-save"
+            size="small"
+            title="Update current template"
+            @click="emit('updateCurrentTemplate')"
+          />
+          <Button
+            icon="fas fa-caret-down"
+            size="small"
+            title="Template actions"
+            @click="toggleMenu"
+          />
         </ButtonGroup>
         <Menu ref="menu" :model="menuItems" popup />
         <Popover ref="op" append-to="body">
           <div class="flex flex-col gap-2 p-1">
             <span class="font-medium text-surface-200">New Template</span>
-            <InputText v-model="newTemplateName" placeholder="Template Name" class="w-64"
-              @keydown.enter="createTemplate" />
-            <Button label="Create" size="small" :disabled="newTemplateName.trim() === ''" @click="createTemplate" />
+            <InputText
+              v-model="newTemplateName"
+              placeholder="Template Name"
+              class="w-64"
+              @keydown.enter="createTemplate"
+            />
+            <Button
+              label="Create"
+              size="small"
+              :disabled="newTemplateName.trim() === ''"
+              @click="createTemplate"
+            />
           </div>
         </Popover>
       </div>
@@ -219,15 +248,25 @@ function createTemplate() {
         </label>
         <p class="text-xs text-surface-400">One header per line</p>
       </div>
-      <Textarea v-model="headersText" rows="4" placeholder="Enter headers to hide" class="w-full font-mono text-sm" />
+      <Textarea
+        v-model="headersText"
+        rows="4"
+        placeholder="Enter headers to hide"
+        class="w-full font-mono text-sm"
+      />
     </div>
 
     <div>
       <label class="mb-2 block text-sm font-medium text-surface-200">
         Layout
       </label>
-      <SelectButton v-model="disposition" :options="dispositionOptions" option-label="label" option-value="value"
-        class="w-full" />
+      <SelectButton
+        v-model="disposition"
+        :options="dispositionOptions"
+        option-label="label"
+        option-value="value"
+        class="w-full"
+      />
     </div>
 
     <div>
@@ -235,27 +274,57 @@ function createTemplate() {
         Content Width
       </label>
       <div class="flex items-center gap-2">
-        <Select v-model="widthMode" :options="widthOptions" option-label="label" option-value="value" class="w-40"
-          append-to="self" />
-        <InputNumber v-if="settings.width.mode === WidthMode.Pixel" v-model="widthPixelValue" :min="200" :max="2000"
-          suffix="px" class="w-32" />
+        <Select
+          v-model="widthMode"
+          :options="widthOptions"
+          option-label="label"
+          option-value="value"
+          class="w-40"
+          append-to="self"
+        />
+        <InputNumber
+          v-if="settings.width.mode === WidthMode.Pixel"
+          v-model="widthPixelValue"
+          :min="200"
+          :max="2000"
+          suffix="px"
+          class="w-32"
+        />
       </div>
     </div>
 
     <div>
       <div class="mb-2 flex items-center justify-between">
         <label class="text-sm font-medium text-surface-200">Highlights</label>
-        <Button icon="fas fa-plus" size="small" severity="secondary" @click="handleAddHighlight" />
+        <Button
+          icon="fas fa-plus"
+          size="small"
+          severity="secondary"
+          @click="handleAddHighlight"
+        />
       </div>
-      <HighlightRulesList :rules="settings.highlights" in-overlay @update="handleHighlightsChange" />
+      <HighlightRulesList
+        :rules="settings.highlights"
+        in-overlay
+        @update="handleHighlightsChange"
+      />
     </div>
 
     <div>
       <div class="mb-2 flex items-center justify-between">
         <label class="text-sm font-medium text-surface-200">Redactions</label>
-        <Button icon="fas fa-plus" size="small" severity="secondary" @click="handleAddRedaction" />
+        <Button
+          icon="fas fa-plus"
+          size="small"
+          severity="secondary"
+          @click="handleAddRedaction"
+        />
       </div>
-      <RedactionRulesList :rules="settings.redactions" in-overlay @update="handleRedactionsChange" />
+      <RedactionRulesList
+        :rules="settings.redactions"
+        in-overlay
+        @update="handleRedactionsChange"
+      />
     </div>
   </div>
 </template>

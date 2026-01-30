@@ -1,9 +1,10 @@
-import { Ref } from "vue";
+import { type Ref } from "vue";
+
 import { useSDK } from "@/plugins/sdk";
 import { useTabsStore } from "@/stores/tabs";
 import { useTemplatesStore } from "@/stores/templates";
+import { type ScreenshotSettings } from "@/types";
 import { isPresent } from "@/utils/optional";
-import { ScreenshotSettings } from "@/types";
 
 export interface ContentPanelExposed {
   clearSelectionsForCapture: () => void;
@@ -12,7 +13,7 @@ export interface ContentPanelExposed {
 export function useForm(
   settings: Ref<ScreenshotSettings | undefined>,
   sessionId: Ref<string | undefined>,
-  selectedTemplateId: Ref<string>
+  selectedTemplateId: Ref<string>,
 ) {
   const sdk = useSDK();
   const templatesStore = useTemplatesStore();
