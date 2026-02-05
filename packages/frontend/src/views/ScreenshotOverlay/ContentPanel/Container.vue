@@ -8,7 +8,6 @@ import { type RuleTarget, type ScreenshotSettings, WidthMode } from "@/types";
 
 interface DataDisplayExposed {
   clearSelectionsForCapture: () => void;
-  restoreSelectionsAfterCapture: () => void;
 }
 
 const dataDisplayRef = ref<DataDisplayExposed | undefined>(undefined);
@@ -57,13 +56,8 @@ function clearSelectionsForCapture(): void {
   dataDisplayRef.value?.clearSelectionsForCapture();
 }
 
-function restoreSelectionsAfterCapture(): void {
-  dataDisplayRef.value?.restoreSelectionsAfterCapture();
-}
-
 defineExpose({
   clearSelectionsForCapture,
-  restoreSelectionsAfterCapture,
 });
 </script>
 
