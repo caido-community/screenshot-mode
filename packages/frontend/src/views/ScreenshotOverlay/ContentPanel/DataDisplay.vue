@@ -239,6 +239,21 @@ onUnmounted(() => {
     responseEditorContainer.value.innerHTML = "";
   }
 });
+
+function clearSelectionsForCapture(): void {
+  const requestView = requestEditor.getEditorView();
+  const responseView = responseEditor.getEditorView();
+
+  requestView.dispatch({ selection: { anchor: 0 } });
+  responseView.dispatch({ selection: { anchor: 0 } });
+
+  requestView.contentDOM.blur();
+  responseView.contentDOM.blur();
+}
+
+defineExpose({
+  clearSelectionsForCapture,
+});
 </script>
 
 <template>

@@ -6,6 +6,7 @@ import { computed, onMounted, onUnmounted, ref, watch } from "vue";
 import { ContentPanel } from "./ContentPanel";
 import SettingsPanel from "./SettingsPanel.vue";
 import { useEntry } from "./useEntry";
+import { type ContentPanelExposed } from "./useForm";
 
 import { useSDK } from "@/plugins/sdk";
 import { closeOverlay, getOverlayState } from "@/stores/overlay";
@@ -19,17 +20,26 @@ import {
   type RuleTarget,
   type ScreenshotSettings,
 } from "@/types";
+import { delay } from "@/utils/async";
 import { isPresent } from "@/utils/optional";
 import { escapeRegex } from "@/utils/regex";
-import { captureAndCopyToClipboard, captureAndDownload } from "@/utils/screenshot";
+import {
+  captureAndCopyToClipboard,
+  captureAndDownload,
+} from "@/utils/screenshot";
 
 const DEFAULT_HIGHLIGHT_COLOR = "#ffff00";
 const DEFAULT_REDACTION_TEXT = "[REDACTED]";
 
 const sdk = useSDK();
 const { getActiveRequestId } = useEntry();
-const { getTabSettings, setTabSettingsFromTemplate, updateTabSettings, getSplitterSizes, setSplitterSizes } =
-  useTabsStore();
+const {
+  getTabSettings,
+  setTabSettingsFromTemplate,
+  updateTabSettings,
+  getSplitterSizes,
+  setSplitterSizes,
+} = useTabsStore();
 const templatesStore = useTemplatesStore();
 const { defaultTemplateId } = storeToRefs(templatesStore);
 const overlayState = getOverlayState();
@@ -43,6 +53,10 @@ const urlInfo = ref<{ url: string; sni: string | undefined }>({
   sni: undefined,
 });
 const contentPanelRef = ref<HTMLElement | undefined>(undefined);
+
+const contentPanelComponentRef = ref<ContentPanelExposed | undefined>(
+  undefined,
+);
 
 const isVisible = computed(() => overlayState.value.isOpen);
 const sessionId = computed(() => overlayState.value.sessionId);
@@ -133,29 +147,27 @@ function handleBackdropClick(event: MouseEvent): void {
   }
 }
 
-async function handleSaveScreenshot(): Promise<void> {
+async function handleScreenshot(action: "disk" | "clipboard"): Promise<void> {
   if (contentPanelRef.value === undefined) {
     sdk.window.showToast("Content panel not ready", { variant: "error" });
     return;
   }
-  const result = await captureAndDownload(contentPanelRef.value);
-  if (result.success) {
-    sdk.window.showToast("Screenshot saved!", { variant: "success" });
-  } else {
-    sdk.window.showToast(`Failed: ${result.error}`, { variant: "error" });
-  }
-}
+  contentPanelComponentRef.value?.clearSelectionsForCapture();
+  await delay(50);
 
-async function handleCopyScreenshot(): Promise<void> {
-  if (contentPanelRef.value === undefined) {
-    sdk.window.showToast("Content panel not ready", { variant: "error" });
-    return;
+  let result;
+  if (action === "disk") {
+    result = await captureAndDownload(contentPanelRef.value);
+  } else {
+    result = await captureAndCopyToClipboard(contentPanelRef.value);
   }
-  const result = await captureAndCopyToClipboard(contentPanelRef.value);
+
   if (result.success) {
-    sdk.window.showToast("Screenshot copied to clipboard!", {
-      variant: "success",
-    });
+    const message =
+      action === "disk"
+        ? "Screenshot saved!"
+        : "Screenshot copied to clipboard!";
+    sdk.window.showToast(message, { variant: "success" });
   } else {
     sdk.window.showToast(`Failed: ${result.error}`, { variant: "error" });
   }
@@ -249,13 +261,13 @@ onUnmounted(() => {
               label="Save Screenshot"
               icon="fas fa-download"
               size="small"
-              @click="handleSaveScreenshot"
+              @click="handleScreenshot('disk')"
             />
             <Button
               label="Copy To Clipboard"
               icon="fas fa-copy"
               size="small"
-              @click="handleCopyScreenshot"
+              @click="handleScreenshot('clipboard')"
             />
           </div>
           <button
@@ -284,6 +296,7 @@ onUnmounted(() => {
             <div ref="contentPanelRef" class="flex flex-1 justify-center">
               <ContentPanel
                 v-if="isPresent(settings)"
+                ref="contentPanelComponentRef"
                 :settings="settings"
                 :request-raw="requestRaw"
                 :response-raw="responseRaw"

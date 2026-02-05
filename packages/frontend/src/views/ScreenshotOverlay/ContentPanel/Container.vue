@@ -1,10 +1,16 @@
 <script setup lang="ts">
-import { computed } from "vue";
+import { computed, ref } from "vue";
 
 import DataDisplay from "./DataDisplay.vue";
 import UrlHeader from "./UrlHeader.vue";
 
 import { type RuleTarget, type ScreenshotSettings, WidthMode } from "@/types";
+
+interface DataDisplayExposed {
+  clearSelectionsForCapture: () => void;
+}
+
+const dataDisplayRef = ref<DataDisplayExposed | undefined>(undefined);
 
 const WIDTH_PRESETS = {
   [WidthMode.A4]: 595,
@@ -45,6 +51,14 @@ const contentStyle = computed(() => {
 
   return {};
 });
+
+function clearSelectionsForCapture(): void {
+  dataDisplayRef.value?.clearSelectionsForCapture();
+}
+
+defineExpose({
+  clearSelectionsForCapture,
+});
 </script>
 
 <template>
@@ -54,6 +68,7 @@ const contentStyle = computed(() => {
   >
     <UrlHeader :url="url" :sni="sni" />
     <DataDisplay
+      ref="dataDisplayRef"
       :request-raw="requestRaw"
       :response-raw="responseRaw"
       :settings="settings"
