@@ -20,6 +20,7 @@ import {
   type RuleTarget,
   type ScreenshotSettings,
 } from "@/types";
+import { delay } from "@/utils/async";
 import { isPresent } from "@/utils/optional";
 import { escapeRegex } from "@/utils/regex";
 import {
@@ -153,13 +154,6 @@ function handleBackdropClick(event: MouseEvent): void {
   if (event.target === event.currentTarget) {
     closeOverlay();
   }
-}
-
-function delay(ms: number): Promise<void> {
-  // eslint-disable-next-line compat/compat
-  return new Promise((resolve) => {
-    setTimeout(resolve, ms);
-  });
 }
 
 async function handleScreenshot(action: "disk" | "clipboard"): Promise<void> {
