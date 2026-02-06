@@ -1,11 +1,14 @@
 <script setup lang="ts">
 import { storeToRefs } from "pinia";
 import Button from "primevue/button";
-import InputNumber from "primevue/inputnumber";
+import ButtonGroup from "primevue/buttongroup";
+import InputText from "primevue/inputtext";
+import Menu from "primevue/menu";
+import Popover from "primevue/popover";
 import Select from "primevue/select";
 import SelectButton from "primevue/selectbutton";
 import Textarea from "primevue/textarea";
-import { computed } from "vue";
+import { computed, ref } from "vue";
 
 import { HighlightRulesList } from "@/components/HighlightRulesList";
 import { RedactionRulesList } from "@/components/RedactionRulesList";
@@ -33,7 +36,12 @@ const emit = defineEmits<{
   update: [settings: ScreenshotSettings];
   templateChange: [templateId: string];
   resetToTemplate: [];
+  saveAsNewTemplate: [name: string];
+  updateCurrentTemplate: [];
 }>();
+
+const op = ref<InstanceType<typeof Popover> | undefined>(undefined);
+const newTemplateName = ref("");
 
 const templatesStore = useTemplatesStore();
 const { templates } = storeToRefs(templatesStore);
@@ -145,6 +153,33 @@ function handleAddRedaction(): void {
     redactions: [...settings.redactions, newRule],
   });
 }
+
+const menu = ref<InstanceType<typeof Menu> | undefined>(undefined);
+const menuItems = [
+  {
+    label: "Save As New Template",
+    icon: "fas fa-plus",
+    command: (event: { originalEvent: Event }) => {
+      toggleCreatePopover(event.originalEvent);
+    },
+  },
+];
+
+function toggleMenu(event: Event) {
+  menu.value?.toggle(event);
+}
+
+function toggleCreatePopover(event: Event) {
+  newTemplateName.value = "";
+  op.value?.toggle(event);
+}
+
+function createTemplate() {
+  if (newTemplateName.value.trim() !== "") {
+    emit("saveAsNewTemplate", newTemplateName.value.trim());
+    op.value?.hide();
+  }
+}
 </script>
 
 <template>
@@ -169,6 +204,40 @@ function handleAddRedaction(): void {
           title="Reset to template defaults"
           @click="emit('resetToTemplate')"
         />
+
+        <ButtonGroup>
+          <Button
+            label="Update"
+            icon="fas fa-save"
+            size="small"
+            title="Update current template"
+            @click="emit('updateCurrentTemplate')"
+          />
+          <Button
+            icon="fas fa-caret-down"
+            size="small"
+            title="Template actions"
+            @click="toggleMenu"
+          />
+        </ButtonGroup>
+        <Menu ref="menu" :model="menuItems" popup />
+        <Popover ref="op" append-to="body">
+          <div class="flex flex-col gap-2 p-1">
+            <span class="font-medium text-surface-200">New Template</span>
+            <InputText
+              v-model="newTemplateName"
+              placeholder="Template Name"
+              class="w-64"
+              @keydown.enter="createTemplate"
+            />
+            <Button
+              label="Create"
+              size="small"
+              :disabled="newTemplateName.trim() === ''"
+              @click="createTemplate"
+            />
+          </div>
+        </Popover>
       </div>
     </div>
 
