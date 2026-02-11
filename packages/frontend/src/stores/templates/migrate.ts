@@ -15,9 +15,19 @@ export function isStoredData(stored: unknown): stored is StoredData {
   );
 }
 
+function migrateTemplates(data: StoredData): StoredData {
+  return {
+    ...data,
+    templates: data.templates.map((t) => ({
+      ...t,
+      settings: parseStoredSettings(t.settings),
+    })),
+  };
+}
+
 export function migrateStorage(stored: unknown): StoredData {
   if (isStoredData(stored)) {
-    return stored;
+    return migrateTemplates(stored);
   }
 
   const settings = parseStoredSettings(stored);

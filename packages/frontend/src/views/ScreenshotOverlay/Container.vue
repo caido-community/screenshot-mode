@@ -221,11 +221,14 @@ function handleAddRedaction(regex: string, target: RuleTarget): void {
 
 function handleAddHiddenHeader(headerName: string): void {
   if (!isPresent(settings.value)) return;
-  if (settings.value.headersToHide.includes(headerName)) return;
+  if (settings.value.headersToHide.both.includes(headerName)) return;
 
   handleSettingsChange({
     ...settings.value,
-    headersToHide: [...settings.value.headersToHide, headerName],
+    headersToHide: {
+      ...settings.value.headersToHide,
+      both: [...settings.value.headersToHide.both, headerName],
+    },
   });
 }
 

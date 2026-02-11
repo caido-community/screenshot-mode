@@ -81,8 +81,16 @@ function filterHeaders(raw: string, headersToHide: string[]): string {
 }
 
 function updateEditors(): void {
-  const filteredRequest = filterHeaders(requestRaw, settings.headersToHide);
-  const filteredResponse = filterHeaders(responseRaw, settings.headersToHide);
+  const requestHeadersToHide = [
+    ...settings.headersToHide.both,
+    ...settings.headersToHide.request,
+  ];
+  const responseHeadersToHide = [
+    ...settings.headersToHide.both,
+    ...settings.headersToHide.response,
+  ];
+  const filteredRequest = filterHeaders(requestRaw, requestHeadersToHide);
+  const filteredResponse = filterHeaders(responseRaw, responseHeadersToHide);
 
   const requestView = requestEditor.getEditorView();
   const responseView = responseEditor.getEditorView();

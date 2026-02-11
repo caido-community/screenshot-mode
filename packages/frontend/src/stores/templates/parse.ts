@@ -1,8 +1,8 @@
 import {
   DEFAULT_SETTINGS,
   Disposition,
+  type HiddenHeaders,
   type ScreenshotSettings,
-  type StoredSettings,
   WidthMode,
   type WidthSetting,
 } from "@/types";
@@ -31,6 +31,23 @@ function parseWidthSetting(width: unknown): WidthSetting {
   }
 
   return { mode: WidthMode.Full };
+}
+
+function parseHiddenHeaders(data: unknown): HiddenHeaders {
+  if (Array.isArray(data)) {
+    return { both: data, request: [], response: [] };
+  }
+
+  if (data !== undefined && data !== null && typeof data === "object") {
+    const obj = data as Partial<HiddenHeaders>;
+    return {
+      both: Array.isArray(obj.both) ? obj.both : [],
+      request: Array.isArray(obj.request) ? obj.request : [],
+      response: Array.isArray(obj.response) ? obj.response : [],
+    };
+  }
+
+  return DEFAULT_SETTINGS.headersToHide;
 }
 
 function parseRedactions(
@@ -68,12 +85,10 @@ export function parseStoredSettings(stored: unknown): ScreenshotSettings {
     return { ...DEFAULT_SETTINGS };
   }
 
-  const data = stored as Partial<StoredSettings>;
+  const data = stored as Record<string, unknown>;
 
   return {
-    headersToHide: Array.isArray(data.headersToHide)
-      ? data.headersToHide
-      : DEFAULT_SETTINGS.headersToHide,
+    headersToHide: parseHiddenHeaders(data.headersToHide),
     disposition:
       data.disposition === Disposition.Vertical
         ? Disposition.Vertical

@@ -21,6 +21,20 @@ export const RuleTarget = {
 } as const;
 export type RuleTarget = (typeof RuleTarget)[keyof typeof RuleTarget];
 
+export const HeaderHideTarget = {
+  Both: "both",
+  Request: "request",
+  Response: "response",
+} as const;
+export type HeaderHideTarget =
+  (typeof HeaderHideTarget)[keyof typeof HeaderHideTarget];
+
+export type HiddenHeaders = {
+  both: string[];
+  request: string[];
+  response: string[];
+};
+
 export const Disposition = {
   Horizontal: "horizontal",
   Vertical: "vertical",
@@ -65,15 +79,7 @@ export type RedactionRule = RedactionRuleBase &
   );
 
 export type ScreenshotSettings = {
-  headersToHide: string[];
-  disposition: Disposition;
-  width: WidthSetting;
-  highlights: HighlightRule[];
-  redactions: RedactionRule[];
-};
-
-export type StoredSettings = {
-  headersToHide: string[];
+  headersToHide: HiddenHeaders;
   disposition: Disposition;
   width: WidthSetting;
   highlights: HighlightRule[];
@@ -135,7 +141,11 @@ const DEFAULT_HEADERS_TO_HIDE = [
 ];
 
 export const DEFAULT_SETTINGS: ScreenshotSettings = {
-  headersToHide: DEFAULT_HEADERS_TO_HIDE,
+  headersToHide: {
+    both: DEFAULT_HEADERS_TO_HIDE,
+    request: [],
+    response: [],
+  },
   disposition: Disposition.Horizontal,
   width: { mode: WidthMode.Full },
   highlights: [],
