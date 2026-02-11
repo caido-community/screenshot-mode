@@ -2,6 +2,7 @@
 import { storeToRefs } from "pinia";
 import Button from "primevue/button";
 import ButtonGroup from "primevue/buttongroup";
+import InputNumber from "primevue/inputnumber";
 import InputText from "primevue/inputtext";
 import Menu from "primevue/menu";
 import Popover from "primevue/popover";

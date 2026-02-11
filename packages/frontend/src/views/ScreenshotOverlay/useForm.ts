@@ -8,6 +8,7 @@ import { isPresent } from "@/utils/optional";
 
 export interface ContentPanelExposed {
   clearSelectionsForCapture: () => void;
+  getCaptureRootElement: () => HTMLElement | undefined;
 }
 
 export function useForm(
