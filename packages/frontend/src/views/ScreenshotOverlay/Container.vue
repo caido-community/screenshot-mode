@@ -6,7 +6,7 @@ import { computed, onMounted, onUnmounted, ref, watch } from "vue";
 import { ContentPanel } from "./ContentPanel";
 import SettingsPanel from "./SettingsPanel.vue";
 import { useEntry } from "./useEntry";
-import { type ContentPanelExposed } from "./useForm";
+import { type ContentPanelExposed, useForm } from "./useForm";
 
 import { useSDK } from "@/plugins/sdk";
 import { closeOverlay, getOverlayState } from "@/stores/overlay";
@@ -39,6 +39,8 @@ const {
   updateTabSettings,
   getSplitterSizes,
   setSplitterSizes,
+  getSelectedTemplateId,
+  setSelectedTemplateId,
 } = useTabsStore();
 const templatesStore = useTemplatesStore();
 const { defaultTemplateId } = storeToRefs(templatesStore);
@@ -60,6 +62,11 @@ const contentPanelComponentRef = ref<ContentPanelExposed | undefined>(
 
 const isVisible = computed(() => overlayState.value.isOpen);
 const sessionId = computed(() => overlayState.value.sessionId);
+const { handleSaveAsNewTemplate, handleUpdateCurrentTemplate } = useForm(
+  settings,
+  sessionId,
+  selectedTemplateId,
+);
 const splitterSizes = computed(() => {
   const sid = sessionId.value;
   if (sid === undefined) return [50, 50] as [number, number];
@@ -73,7 +80,8 @@ async function loadSessionData(): Promise<void> {
   }
 
   settings.value = getTabSettings(sid);
-  selectedTemplateId.value = defaultTemplateId.value;
+  selectedTemplateId.value =
+    getSelectedTemplateId(sid) ?? defaultTemplateId.value;
 
   const session = sdk.replay.getCurrentSession();
   if (session === undefined) {
@@ -124,6 +132,7 @@ function handleTemplateChange(templateId: string): void {
 
   selectedTemplateId.value = templateId;
   settings.value = setTabSettingsFromTemplate(sid, templateId);
+  setSelectedTemplateId(sid, templateId);
 }
 
 function handleResetToTemplate(): void {
@@ -244,7 +253,7 @@ onUnmounted(() => {
   <Teleport to="body">
     <div
       v-if="isVisible"
-      class="fixed inset-0 z-[9999] flex items-center justify-center bg-black/60"
+      class="fixed inset-0 z-[500] flex items-center justify-center bg-black/60"
       @click="handleBackdropClick"
     >
       <div
@@ -289,6 +298,8 @@ onUnmounted(() => {
               @update="handleSettingsChange"
               @template-change="handleTemplateChange"
               @reset-to-template="handleResetToTemplate"
+              @save-as-new-template="handleSaveAsNewTemplate"
+              @update-current-template="handleUpdateCurrentTemplate"
             />
           </div>
 
