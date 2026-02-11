@@ -19,10 +19,15 @@ async function renderElement(element: HTMLElement): Promise<string> {
 }
 
 function downloadDataUrl(dataUrl: string): void {
+  const blob = dataUrlToBlob(dataUrl);
+  // eslint-disable-next-line compat/compat -- createObjectURL/revokeObjectURL for reliable download filename
+  const url = URL.createObjectURL(blob);
   const link = document.createElement("a");
+  link.href = url;
   link.download = "screenshot.png";
-  link.href = dataUrl;
   link.click();
+  // eslint-disable-next-line compat/compat
+  URL.revokeObjectURL(url);
 }
 
 function dataUrlToBlob(dataUrl: string): Blob {
