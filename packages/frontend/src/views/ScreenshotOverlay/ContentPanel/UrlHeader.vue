@@ -9,20 +9,24 @@ const { url, sni } = defineProps<{
 
 <template>
   <div
-    class="flex items-center gap-4 border-b border-surface-600 bg-surface-800 px-4 py-2"
+    class="flex flex-wrap items-start gap-4 overflow-hidden border-b border-surface-600 bg-surface-800 px-4 py-2"
   >
-    <div class="flex items-center gap-2">
-      <span class="text-xs font-medium uppercase text-surface-400">URL</span>
+    <div class="flex min-w-0 items-start gap-2">
+      <span class="shrink-0 py-1 text-xs font-medium uppercase text-surface-400"
+        >URL</span
+      >
       <code
-        class="rounded bg-surface-700 px-2 py-1 font-mono text-sm text-surface-100"
+        class="break-all rounded bg-surface-700 px-2 py-1 font-mono text-sm text-surface-100"
       >
         {{ url }}
       </code>
     </div>
-    <div v-if="isPresent(sni)" class="flex items-center gap-2">
-      <span class="text-xs font-medium uppercase text-surface-400">SNI</span>
+    <div v-if="isPresent(sni)" class="flex min-w-0 items-start gap-2">
+      <span class="shrink-0 py-1 text-xs font-medium uppercase text-surface-400"
+        >SNI</span
+      >
       <code
-        class="rounded bg-surface-700 px-2 py-1 font-mono text-sm text-amber-400"
+        class="break-all rounded bg-surface-700 px-2 py-1 font-mono text-sm text-amber-400"
       >
         {{ sni }}
       </code>
