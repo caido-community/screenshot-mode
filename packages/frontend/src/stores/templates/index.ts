@@ -1,8 +1,7 @@
 import { defineStore } from "pinia";
 import { ref, type Ref } from "vue";
 
-import { migrateStorage } from "./migrate";
-import { storedDataV2Schema } from "./schemas";
+import { isStoredData, migrateStorage } from "./migrate";
 
 import { useSDK } from "@/plugins/sdk";
 import {
@@ -25,7 +24,7 @@ export const useTemplatesStore = defineStore("templates", () => {
     templates.value = data.templates;
     defaultTemplateId.value = data.defaultTemplateId;
 
-    if (!storedDataV2Schema.safeParse(stored).success) {
+    if (!isStoredData(stored)) {
       await persistStorage();
     }
 
@@ -123,7 +122,7 @@ export const useTemplatesStore = defineStore("templates", () => {
 
   const persistStorage = async () => {
     const data: StoredData = {
-      version: 2,
+      version: 1,
       templates: templates.value,
       defaultTemplateId: defaultTemplateId.value,
     };

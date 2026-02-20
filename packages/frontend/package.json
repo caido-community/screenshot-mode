@@ -7,7 +7,6 @@
   },
   "dependencies": {
     "@caido/primevue": "0.3.3",
-    "zod": "3.24.1",
     "html-to-image": "1.11.13",
     "lodash-es": "4.17.21",
     "pinia": "3.0.4",
