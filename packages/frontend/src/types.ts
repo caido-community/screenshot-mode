@@ -1,4 +1,15 @@
 import { type Caido } from "@caido/sdk-frontend";
+import { type z } from "zod";
+
+import {
+  type HiddenHeadersSchema,
+  type HighlightRuleSchema,
+  type RedactionRuleSchema,
+  type ScreenshotSettingsSchema,
+  type StoredDataSchema,
+  type TemplateSchema,
+  type WidthSettingSchema,
+} from "@/stores/templates/schemas";
 
 export type FrontendSDK = Caido<Record<string, never>, Record<string, never>>;
 
@@ -29,12 +40,6 @@ export const HeaderHideTarget = {
 export type HeaderHideTarget =
   (typeof HeaderHideTarget)[keyof typeof HeaderHideTarget];
 
-export type HiddenHeaders = {
-  both: string[];
-  request: string[];
-  response: string[];
-};
-
 export const Disposition = {
   Horizontal: "horizontal",
   Vertical: "vertical",
@@ -49,54 +54,17 @@ export const WidthMode = {
 } as const;
 export type WidthMode = (typeof WidthMode)[keyof typeof WidthMode];
 
-export type WidthSetting =
-  | { mode: typeof WidthMode.Pixel; value: number }
-  | { mode: typeof WidthMode.Full }
-  | { mode: typeof WidthMode.A4 }
-  | { mode: typeof WidthMode.Letter };
+// --- Inferred Types ---
 
-export type HighlightRule = {
-  id: string;
-  regex: string;
-  target: RuleTarget;
-  color: string;
-  mode: HighlightMode;
-};
+export type HiddenHeaders = z.infer<typeof HiddenHeadersSchema>;
+export type WidthSetting = z.infer<typeof WidthSettingSchema>;
+export type HighlightRule = z.infer<typeof HighlightRuleSchema>;
+export type RedactionRule = z.infer<typeof RedactionRuleSchema>;
+export type ScreenshotSettings = z.infer<typeof ScreenshotSettingsSchema>;
+export type Template = z.infer<typeof TemplateSchema>;
+export type StoredData = z.infer<typeof StoredDataSchema>;
 
-type RedactionRuleBase = {
-  id: string;
-  regex: string;
-  target: RuleTarget;
-  useCaptureGroups: boolean;
-  selectedGroups: number[];
-};
-
-export type RedactionRule = RedactionRuleBase &
-  (
-    | { mode: typeof RedactionMode.Opaque; color: string }
-    | { mode: typeof RedactionMode.Blur }
-    | { mode: typeof RedactionMode.Replace; replacementText: string }
-  );
-
-export type ScreenshotSettings = {
-  headersToHide: HiddenHeaders;
-  disposition: Disposition;
-  width: WidthSetting;
-  highlights: HighlightRule[];
-  redactions: RedactionRule[];
-};
-
-export type Template = {
-  id: string;
-  name: string;
-  settings: ScreenshotSettings;
-};
-
-export type StoredData = {
-  version: number;
-  templates: Template[];
-  defaultTemplateId: string;
-};
+// --- Defaults ---
 
 const DEFAULT_HEADERS_TO_HIDE = [
   "Accept",

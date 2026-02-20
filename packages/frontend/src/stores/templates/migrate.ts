@@ -1,19 +1,7 @@
 import { parseStoredSettings } from "./parse";
+import { StoredDataSchema } from "./schemas";
 
 import { type StoredData, type Template } from "@/types";
-
-export function isStoredData(stored: unknown): stored is StoredData {
-  if (stored === undefined || stored === null || typeof stored !== "object") {
-    return false;
-  }
-
-  const data = stored as Partial<StoredData>;
-  return (
-    typeof data.version === "number" &&
-    Array.isArray(data.templates) &&
-    typeof data.defaultTemplateId === "string"
-  );
-}
 
 function migrateTemplates(data: StoredData): StoredData {
   return {
@@ -26,8 +14,10 @@ function migrateTemplates(data: StoredData): StoredData {
 }
 
 export function migrateStorage(stored: unknown): StoredData {
-  if (isStoredData(stored)) {
-    return migrateTemplates(stored);
+  const result = StoredDataSchema.safeParse(stored);
+
+  if (result.success) {
+    return migrateTemplates(result.data);
   }
 
   const settings = parseStoredSettings(stored);
