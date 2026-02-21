@@ -7,7 +7,7 @@ import {
 } from "./common";
 import { HighlightRuleSchema, RedactionRuleSchema } from "./rules";
 
-export const ScreenshotSettingsSchema = z.object({
+export const V2SettingsSchema = z.object({
   headersToHide: HiddenHeadersSchema,
   disposition: DispositionSchema,
   width: WidthSettingSchema,
@@ -15,14 +15,14 @@ export const ScreenshotSettingsSchema = z.object({
   redactions: z.array(RedactionRuleSchema),
 });
 
-export const TemplateSchema = z.object({
+export const V2TemplateSchema = z.object({
   id: z.string(),
   name: z.string(),
-  settings: ScreenshotSettingsSchema,
+  settings: V2SettingsSchema,
 });
 
-export const StoredDataSchema = z.object({
-  version: z.number(),
-  templates: z.array(TemplateSchema),
+export const V2StoredDataSchema = z.object({
+  version: z.literal(2),
+  templates: z.array(V2TemplateSchema),
   defaultTemplateId: z.string(),
 });

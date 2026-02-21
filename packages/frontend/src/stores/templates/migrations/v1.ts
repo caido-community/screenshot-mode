@@ -1,12 +1,24 @@
-import { StoredDataSchema } from "@/schemas";
-import { type StoredData } from "@/types";
+import { type V1StoredData } from "@/schemas/v1";
+import { type HiddenHeaders, type StoredData } from "@/types";
 
-export function migrateFromV1(stored: unknown): StoredData | undefined {
-  const result = StoredDataSchema.safeParse(stored);
-
-  if (result.success) {
-    return result.data;
+function normalizeHeaders(headers: string[] | HiddenHeaders): HiddenHeaders {
+  if (Array.isArray(headers)) {
+    return { both: headers, request: [], response: [] };
   }
 
-  return undefined;
+  return headers;
+}
+
+export function fromV1(data: V1StoredData): StoredData {
+  return {
+    version: 2,
+    templates: data.templates.map((t) => ({
+      ...t,
+      settings: {
+        ...t.settings,
+        headersToHide: normalizeHeaders(t.settings.headersToHide),
+      },
+    })),
+    defaultTemplateId: data.defaultTemplateId,
+  };
 }

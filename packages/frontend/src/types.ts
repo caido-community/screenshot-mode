@@ -5,9 +5,9 @@ import {
   type HiddenHeadersSchema,
   type HighlightRuleSchema,
   type RedactionRuleSchema,
-  type ScreenshotSettingsSchema,
-  type StoredDataSchema,
-  type TemplateSchema,
+  type V2SettingsSchema,
+  type V2StoredDataSchema,
+  type V2TemplateSchema,
   type WidthSettingSchema,
 } from "@/schemas";
 
@@ -60,9 +60,9 @@ export type HiddenHeaders = z.infer<typeof HiddenHeadersSchema>;
 export type WidthSetting = z.infer<typeof WidthSettingSchema>;
 export type HighlightRule = z.infer<typeof HighlightRuleSchema>;
 export type RedactionRule = z.infer<typeof RedactionRuleSchema>;
-export type ScreenshotSettings = z.infer<typeof ScreenshotSettingsSchema>;
-export type Template = z.infer<typeof TemplateSchema>;
-export type StoredData = z.infer<typeof StoredDataSchema>;
+export type ScreenshotSettings = z.infer<typeof V2SettingsSchema>;
+export type Template = z.infer<typeof V2TemplateSchema>;
+export type StoredData = z.infer<typeof V2StoredDataSchema>;
 
 // --- Defaults ---
 

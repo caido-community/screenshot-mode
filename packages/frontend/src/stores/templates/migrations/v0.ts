@@ -1,19 +1,12 @@
-import { parseStoredSettings } from "../parse";
+import { type V0Settings } from "@/schemas/v0";
+import { type V1StoredData } from "@/schemas/v1";
 
-import { type StoredData, type Template } from "@/types";
-
-export function migrateFromV0(stored: unknown): StoredData {
-  const settings = parseStoredSettings(stored);
-
-  const defaultTemplate: Template = {
-    id: crypto.randomUUID(),
-    name: "Default",
-    settings,
-  };
+export function fromV0(settings: V0Settings): V1StoredData {
+  const id = crypto.randomUUID();
 
   return {
     version: 1,
-    templates: [defaultTemplate],
-    defaultTemplateId: defaultTemplate.id,
+    templates: [{ id, name: "Default", settings }],
+    defaultTemplateId: id,
   };
 }

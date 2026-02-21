@@ -3,9 +3,10 @@ import { describe, expect, it } from "vitest";
 import {
   HighlightRuleSchema,
   RedactionRuleSchema,
-  ScreenshotSettingsSchema,
-  StoredDataSchema,
-  TemplateSchema,
+  V0SettingsSchema,
+  V1StoredDataSchema,
+  V2StoredDataSchema,
+  V2TemplateSchema,
   WidthSettingSchema,
 } from "@/schemas";
 import {
@@ -138,49 +139,90 @@ describe("RedactionRuleSchema", () => {
   });
 });
 
-describe("ScreenshotSettingsSchema", () => {
-  it("accepts valid settings", () => {
+describe("V0SettingsSchema", () => {
+  it("accepts raw settings with flat headers", () => {
     const settings = {
-      headersToHide: { both: ["Accept"], request: [], response: [] },
+      headersToHide: ["Accept", "Host"],
       disposition: Disposition.Horizontal,
       width: { mode: WidthMode.Full },
       highlights: [],
       redactions: [],
     };
-    const result = ScreenshotSettingsSchema.safeParse(settings);
+    const result = V0SettingsSchema.safeParse(settings);
     expect(result.success).toBe(true);
   });
 
-  it("rejects settings with missing fields", () => {
-    const result = ScreenshotSettingsSchema.safeParse({
-      disposition: "horizontal",
+  it("rejects settings with split headers (belongs to v2)", () => {
+    const result = V0SettingsSchema.safeParse({
+      headersToHide: { both: [], request: [], response: [] },
+      disposition: Disposition.Horizontal,
+      width: { mode: WidthMode.Full },
+      highlights: [],
+      redactions: [],
     });
     expect(result.success).toBe(false);
   });
 });
 
-describe("TemplateSchema", () => {
-  it("accepts a valid template", () => {
-    const template = {
-      id: "abc",
-      name: "My Template",
-      settings: {
-        headersToHide: { both: [], request: [], response: [] },
-        disposition: Disposition.Vertical,
-        width: { mode: WidthMode.A4 },
-        highlights: [],
-        redactions: [],
-      },
+describe("V1StoredDataSchema", () => {
+  it("accepts version 1 data with flat headers", () => {
+    const data = {
+      version: 1,
+      templates: [
+        {
+          id: "t1",
+          name: "Default",
+          settings: {
+            headersToHide: ["Accept"],
+            disposition: Disposition.Horizontal,
+            width: { mode: WidthMode.Full },
+            highlights: [],
+            redactions: [],
+          },
+        },
+      ],
+      defaultTemplateId: "t1",
     };
-    const result = TemplateSchema.safeParse(template);
+    const result = V1StoredDataSchema.safeParse(data);
     expect(result.success).toBe(true);
+  });
+
+  it("accepts version 1 data with split headers", () => {
+    const data = {
+      version: 1,
+      templates: [
+        {
+          id: "t1",
+          name: "Default",
+          settings: {
+            headersToHide: { both: ["Accept"], request: [], response: [] },
+            disposition: Disposition.Horizontal,
+            width: { mode: WidthMode.Full },
+            highlights: [],
+            redactions: [],
+          },
+        },
+      ],
+      defaultTemplateId: "t1",
+    };
+    const result = V1StoredDataSchema.safeParse(data);
+    expect(result.success).toBe(true);
+  });
+
+  it("rejects version 2 data", () => {
+    const result = V1StoredDataSchema.safeParse({
+      version: 2,
+      templates: [],
+      defaultTemplateId: "t1",
+    });
+    expect(result.success).toBe(false);
   });
 });
 
-describe("StoredDataSchema", () => {
-  it("accepts valid stored data", () => {
+describe("V2StoredDataSchema", () => {
+  it("accepts version 2 data with split headers", () => {
     const data = {
-      version: 1,
+      version: 2,
       templates: [
         {
           id: "abc",
@@ -196,12 +238,21 @@ describe("StoredDataSchema", () => {
       ],
       defaultTemplateId: "abc",
     };
-    const result = StoredDataSchema.safeParse(data);
+    const result = V2StoredDataSchema.safeParse(data);
     expect(result.success).toBe(true);
   });
 
+  it("rejects version 1 data", () => {
+    const result = V2StoredDataSchema.safeParse({
+      version: 1,
+      templates: [],
+      defaultTemplateId: "abc",
+    });
+    expect(result.success).toBe(false);
+  });
+
   it("rejects data without version", () => {
-    const result = StoredDataSchema.safeParse({
+    const result = V2StoredDataSchema.safeParse({
       templates: [],
       defaultTemplateId: "abc",
     });
@@ -209,9 +260,27 @@ describe("StoredDataSchema", () => {
   });
 
   it("rejects completely invalid data", () => {
-    expect(StoredDataSchema.safeParse(null).success).toBe(false);
-    expect(StoredDataSchema.safeParse(undefined).success).toBe(false);
-    expect(StoredDataSchema.safeParse("string").success).toBe(false);
-    expect(StoredDataSchema.safeParse(42).success).toBe(false);
+    expect(V2StoredDataSchema.safeParse(null).success).toBe(false);
+    expect(V2StoredDataSchema.safeParse(undefined).success).toBe(false);
+    expect(V2StoredDataSchema.safeParse("string").success).toBe(false);
+    expect(V2StoredDataSchema.safeParse(42).success).toBe(false);
+  });
+});
+
+describe("V2TemplateSchema", () => {
+  it("accepts a valid template", () => {
+    const template = {
+      id: "abc",
+      name: "My Template",
+      settings: {
+        headersToHide: { both: [], request: [], response: [] },
+        disposition: Disposition.Vertical,
+        width: { mode: WidthMode.A4 },
+        highlights: [],
+        redactions: [],
+      },
+    };
+    const result = V2TemplateSchema.safeParse(template);
+    expect(result.success).toBe(true);
   });
 });

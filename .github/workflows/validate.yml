@@ -3,7 +3,7 @@ name: Validate
 on:
   push:
     branches:
-      - 'main'
+      - "main"
   pull_request:
 
 concurrency:
@@ -16,7 +16,7 @@ env:
 
 jobs:
   typecheck:
-    name: 'Typecheck'
+    name: "Typecheck"
     runs-on: ubuntu-latest
     timeout-minutes: 10
 
@@ -41,7 +41,7 @@ jobs:
         run: pnpm typecheck
 
   lint:
-    name: 'Lint'
+    name: "Lint"
     runs-on: ubuntu-latest
     timeout-minutes: 10
     steps:
@@ -65,7 +65,7 @@ jobs:
         run: pnpm lint
 
   knip:
-    name: 'Knip'
+    name: "Knip"
     runs-on: ubuntu-latest
     timeout-minutes: 10
     steps:
@@ -89,7 +89,7 @@ jobs:
         run: pnpm knip
 
   test:
-    name: 'Test'
+    name: "Test"
     runs-on: ubuntu-latest
     timeout-minutes: 10
     steps:
