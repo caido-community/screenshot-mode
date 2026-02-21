@@ -1,5 +1,4 @@
-import { ScreenshotSettingsSchema } from "./schemas";
-
+import { ScreenshotSettingsSchema } from "@/schemas";
 import { DEFAULT_SETTINGS, type ScreenshotSettings } from "@/types";
 
 export function parseStoredSettings(stored: unknown): ScreenshotSettings {

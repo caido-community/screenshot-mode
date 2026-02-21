@@ -9,7 +9,7 @@ import {
   type StoredDataSchema,
   type TemplateSchema,
   type WidthSettingSchema,
-} from "@/stores/templates/schemas";
+} from "@/schemas";
 
 export type FrontendSDK = Caido<Record<string, never>, Record<string, never>>;
 

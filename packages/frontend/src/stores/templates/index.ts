@@ -1,8 +1,7 @@
 import { defineStore } from "pinia";
 import { ref, type Ref } from "vue";
 
-import { migrateStorage } from "./migrate";
-import { StoredDataSchema } from "./schemas";
+import { migrateStorage } from "./migrations";
 
 import { useSDK } from "@/plugins/sdk";
 import {
@@ -21,16 +20,16 @@ export const useTemplatesStore = defineStore("templates", () => {
 
   const initialize = async () => {
     const stored = sdk.storage.get();
-    const data = migrateStorage(stored);
+    const { data, migrated } = migrateStorage(stored);
     templates.value = data.templates;
     defaultTemplateId.value = data.defaultTemplateId;
 
-    if (!StoredDataSchema.safeParse(stored).success) {
+    if (migrated) {
       await persistStorage();
     }
 
     sdk.storage.onChange((value) => {
-      const newData = migrateStorage(value);
+      const { data: newData } = migrateStorage(value);
       templates.value = newData.templates;
       defaultTemplateId.value = newData.defaultTemplateId;
     });
