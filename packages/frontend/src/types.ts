@@ -1,4 +1,15 @@
 import { type Caido } from "@caido/sdk-frontend";
+import { type z } from "zod";
+
+import {
+  type HiddenHeadersSchema,
+  type HighlightRuleSchema,
+  type RedactionRuleSchema,
+  type V2SettingsSchema,
+  type V2StoredDataSchema,
+  type V2TemplateSchema,
+  type WidthSettingSchema,
+} from "@/schemas";
 
 export type FrontendSDK = Caido<Record<string, never>, Record<string, never>>;
 
@@ -21,6 +32,14 @@ export const RuleTarget = {
 } as const;
 export type RuleTarget = (typeof RuleTarget)[keyof typeof RuleTarget];
 
+export const HeaderHideTarget = {
+  Both: "both",
+  Request: "request",
+  Response: "response",
+} as const;
+export type HeaderHideTarget =
+  (typeof HeaderHideTarget)[keyof typeof HeaderHideTarget];
+
 export const Disposition = {
   Horizontal: "horizontal",
   Vertical: "vertical",
@@ -35,62 +54,17 @@ export const WidthMode = {
 } as const;
 export type WidthMode = (typeof WidthMode)[keyof typeof WidthMode];
 
-export type WidthSetting =
-  | { mode: typeof WidthMode.Pixel; value: number }
-  | { mode: typeof WidthMode.Full }
-  | { mode: typeof WidthMode.A4 }
-  | { mode: typeof WidthMode.Letter };
+// --- Inferred Types ---
 
-export type HighlightRule = {
-  id: string;
-  regex: string;
-  target: RuleTarget;
-  color: string;
-  mode: HighlightMode;
-};
+export type HiddenHeaders = z.infer<typeof HiddenHeadersSchema>;
+export type WidthSetting = z.infer<typeof WidthSettingSchema>;
+export type HighlightRule = z.infer<typeof HighlightRuleSchema>;
+export type RedactionRule = z.infer<typeof RedactionRuleSchema>;
+export type ScreenshotSettings = z.infer<typeof V2SettingsSchema>;
+export type Template = z.infer<typeof V2TemplateSchema>;
+export type StoredData = z.infer<typeof V2StoredDataSchema>;
 
-type RedactionRuleBase = {
-  id: string;
-  regex: string;
-  target: RuleTarget;
-  useCaptureGroups: boolean;
-  selectedGroups: number[];
-};
-
-export type RedactionRule = RedactionRuleBase &
-  (
-    | { mode: typeof RedactionMode.Opaque; color: string }
-    | { mode: typeof RedactionMode.Blur }
-    | { mode: typeof RedactionMode.Replace; replacementText: string }
-  );
-
-export type ScreenshotSettings = {
-  headersToHide: string[];
-  disposition: Disposition;
-  width: WidthSetting;
-  highlights: HighlightRule[];
-  redactions: RedactionRule[];
-};
-
-export type StoredSettings = {
-  headersToHide: string[];
-  disposition: Disposition;
-  width: WidthSetting;
-  highlights: HighlightRule[];
-  redactions: RedactionRule[];
-};
-
-export type Template = {
-  id: string;
-  name: string;
-  settings: ScreenshotSettings;
-};
-
-export type StoredData = {
-  version: number;
-  templates: Template[];
-  defaultTemplateId: string;
-};
+// --- Defaults ---
 
 const DEFAULT_HEADERS_TO_HIDE = [
   "Accept",
@@ -135,7 +109,11 @@ const DEFAULT_HEADERS_TO_HIDE = [
 ];
 
 export const DEFAULT_SETTINGS: ScreenshotSettings = {
-  headersToHide: DEFAULT_HEADERS_TO_HIDE,
+  headersToHide: {
+    both: DEFAULT_HEADERS_TO_HIDE,
+    request: [],
+    response: [],
+  },
   disposition: Disposition.Horizontal,
   width: { mode: WidthMode.Full },
   highlights: [],

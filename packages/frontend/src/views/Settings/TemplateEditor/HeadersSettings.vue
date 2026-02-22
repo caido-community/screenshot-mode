@@ -1,17 +1,32 @@
 <script setup lang="ts">
+import SelectButton from "primevue/selectbutton";
 import Textarea from "primevue/textarea";
-import { computed } from "vue";
+import { computed, ref } from "vue";
 
-const model = defineModel<string[]>({ required: true });
+import {
+  HeaderHideTarget,
+  type HeaderHideTarget as HeaderHideTargetType,
+  type HiddenHeaders,
+} from "@/types";
+
+const model = defineModel<HiddenHeaders>({ required: true });
+
+const headerTargetOptions = [
+  { label: "Both", value: HeaderHideTarget.Both },
+  { label: "Request", value: HeaderHideTarget.Request },
+  { label: "Response", value: HeaderHideTarget.Response },
+];
+
+const headerTarget = ref<HeaderHideTargetType>(HeaderHideTarget.Both);
 
 const headersText = computed({
-  get: () => model.value.join("\n"),
+  get: () => model.value[headerTarget.value].join("\n"),
   set: (value: string) => {
     const headers = value
       .split("\n")
       .map((h) => h.trim())
       .filter((h) => h.length > 0);
-    model.value = headers;
+    model.value = { ...model.value, [headerTarget.value]: headers };
   },
 });
 </script>
@@ -29,8 +44,15 @@ const headersText = computed({
       >
     </div>
     <p class="mb-2 text-xs text-surface-400">
-      Headers that will be hidden from both request and response
+      Choose which side to hide headers from
     </p>
+    <SelectButton
+      v-model="headerTarget"
+      :options="headerTargetOptions"
+      option-label="label"
+      option-value="value"
+      class="mb-2 w-full"
+    />
     <Textarea
       v-model="headersText"
       placeholder="Enter headers to hide, one per line"

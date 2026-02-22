@@ -157,7 +157,8 @@ function handleBackdropClick(event: MouseEvent): void {
 }
 
 async function handleScreenshot(action: "disk" | "clipboard"): Promise<void> {
-  if (contentPanelRef.value === undefined) {
+  const contentEl = contentPanelComponentRef.value?.getCaptureRootElement();
+  if (contentEl === undefined) {
     sdk.window.showToast("Content panel not ready", { variant: "error" });
     return;
   }
@@ -166,9 +167,9 @@ async function handleScreenshot(action: "disk" | "clipboard"): Promise<void> {
 
   let result;
   if (action === "disk") {
-    result = await captureAndDownload(contentPanelRef.value);
+    result = await captureAndDownload(contentEl);
   } else {
-    result = await captureAndCopyToClipboard(contentPanelRef.value);
+    result = await captureAndCopyToClipboard(contentEl);
   }
 
   if (result.success) {
@@ -220,11 +221,14 @@ function handleAddRedaction(regex: string, target: RuleTarget): void {
 
 function handleAddHiddenHeader(headerName: string): void {
   if (!isPresent(settings.value)) return;
-  if (settings.value.headersToHide.includes(headerName)) return;
+  if (settings.value.headersToHide.both.includes(headerName)) return;
 
   handleSettingsChange({
     ...settings.value,
-    headersToHide: [...settings.value.headersToHide, headerName],
+    headersToHide: {
+      ...settings.value.headersToHide,
+      both: [...settings.value.headersToHide.both, headerName],
+    },
   });
 }
 
@@ -320,7 +324,7 @@ onUnmounted(() => {
                 @update-splitter-sizes="
                   (sizes) => {
                     const sid = sessionId;
-                    if (sid) setSplitterSizes(sid, sizes);
+                    if (sid !== undefined) setSplitterSizes(sid, sizes);
                   }
                 "
               />

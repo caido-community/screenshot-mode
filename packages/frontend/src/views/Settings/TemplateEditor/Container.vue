@@ -14,6 +14,7 @@ import { useTemplatesStore } from "@/stores/templates";
 import {
   DEFAULT_SETTINGS,
   type Disposition,
+  type HiddenHeaders,
   type HighlightRule,
   type RedactionRule,
   type ScreenshotSettings,
@@ -43,7 +44,7 @@ const settings = ref<ScreenshotSettings>(
 
 const headersToHide = computed({
   get: () => settings.value.headersToHide,
-  set: (value: string[]) => {
+  set: (value: HiddenHeaders) => {
     settings.value = { ...settings.value, headersToHide: value };
   },
 });

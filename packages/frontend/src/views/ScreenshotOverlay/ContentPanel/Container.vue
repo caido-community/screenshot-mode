@@ -10,6 +10,7 @@ interface DataDisplayExposed {
   clearSelectionsForCapture: () => void;
 }
 
+const captureRootRef = ref<HTMLElement | undefined>(undefined);
 const dataDisplayRef = ref<DataDisplayExposed | undefined>(undefined);
 
 const WIDTH_PRESETS = {
@@ -56,13 +57,19 @@ function clearSelectionsForCapture(): void {
   dataDisplayRef.value?.clearSelectionsForCapture();
 }
 
+function getCaptureRootElement(): HTMLElement | undefined {
+  return captureRootRef.value;
+}
+
 defineExpose({
   clearSelectionsForCapture,
+  getCaptureRootElement,
 });
 </script>
 
 <template>
   <div
+    ref="captureRootRef"
     class="flex w-full flex-col overflow-hidden border border-surface-600"
     :style="contentStyle"
   >

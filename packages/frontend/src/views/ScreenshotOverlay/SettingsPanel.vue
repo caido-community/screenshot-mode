@@ -2,6 +2,7 @@
 import { storeToRefs } from "pinia";
 import Button from "primevue/button";
 import ButtonGroup from "primevue/buttongroup";
+import InputNumber from "primevue/inputnumber";
 import InputText from "primevue/inputtext";
 import Menu from "primevue/menu";
 import Popover from "primevue/popover";
@@ -16,6 +17,8 @@ import { useTemplatesStore } from "@/stores/templates";
 import {
   Disposition,
   type Disposition as DispositionType,
+  HeaderHideTarget,
+  type HeaderHideTarget as HeaderHideTargetType,
   HighlightMode,
   type HighlightRule,
   RedactionMode,
@@ -69,14 +72,28 @@ const widthOptions = [
   { label: "Letter (612px)", value: WidthMode.Letter },
 ];
 
+const headerTargetOptions = [
+  { label: "Both", value: HeaderHideTarget.Both },
+  { label: "Request", value: HeaderHideTarget.Request },
+  { label: "Response", value: HeaderHideTarget.Response },
+];
+
+const headerTarget = ref<HeaderHideTargetType>(HeaderHideTarget.Both);
+
 const headersText = computed({
-  get: () => settings.headersToHide.join("\n"),
+  get: () => settings.headersToHide[headerTarget.value].join("\n"),
   set: (value: string) => {
     const headers = value
       .split("\n")
       .map((h) => h.trim())
       .filter((h) => h.length > 0);
-    emit("update", { ...settings, headersToHide: headers });
+    emit("update", {
+      ...settings,
+      headersToHide: {
+        ...settings.headersToHide,
+        [headerTarget.value]: headers,
+      },
+    });
   },
 });
 
@@ -248,6 +265,13 @@ function createTemplate() {
         </label>
         <p class="text-xs text-surface-400">One header per line</p>
       </div>
+      <SelectButton
+        v-model="headerTarget"
+        :options="headerTargetOptions"
+        option-label="label"
+        option-value="value"
+        class="mb-2 w-full"
+      />
       <Textarea
         v-model="headersText"
         rows="4"
