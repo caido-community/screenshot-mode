@@ -141,6 +141,7 @@ async function loadSessionData(): Promise<void> {
   settings.value = getTabSettings(sid);
   selectedTemplateId.value =
     getSelectedTemplateId(sid) ?? defaultTemplateId.value;
+  cropMaxHeight.value = getCropHeight();
 
   const session = sdk.replay.getCurrentSession();
   if (session === undefined) {
