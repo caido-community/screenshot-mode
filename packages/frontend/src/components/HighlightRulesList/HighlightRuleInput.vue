@@ -3,11 +3,14 @@ import Button from "primevue/button";
 import ColorPicker from "primevue/colorpicker";
 import InputText from "primevue/inputtext";
 import Select from "primevue/select";
+import SelectButton from "primevue/selectbutton";
 import { computed } from "vue";
 
 import {
   HighlightMode,
   type HighlightRule,
+  MatchMode,
+  type MatchMode as MatchModeType,
   RuleTarget,
   type RuleTarget as RuleTargetType,
 } from "@/types";
@@ -35,6 +38,11 @@ const modeOptions = [
   { label: "Rectangle", value: HighlightMode.Rectangle },
 ];
 
+const matchModeOptions = [
+  { label: "Regex", value: MatchMode.Regex },
+  { label: "String", value: MatchMode.String },
+];
+
 function handleRegexChange(value: string | undefined): void {
   emit("update", { ...rule, regex: value ?? "" });
 }
@@ -52,6 +60,10 @@ function handleColorChange(value: string | undefined): void {
     emit("update", { ...rule, color: `#${value}` });
   }
 }
+
+function handleMatchModeChange(value: MatchModeType): void {
+  emit("update", { ...rule, matchMode: value });
+}
 </script>
 
 <template>
@@ -59,7 +71,11 @@ function handleColorChange(value: string | undefined): void {
     <div class="flex items-center gap-2">
       <InputText
         :model-value="rule.regex"
-        placeholder="Regex pattern"
+        :placeholder="
+          rule.matchMode === MatchMode.String
+            ? 'Literal string'
+            : 'Regex pattern'
+        "
         class="flex-1 font-mono text-sm"
         @update:model-value="handleRegexChange"
       />
@@ -97,6 +113,13 @@ function handleColorChange(value: string | undefined): void {
         format="hex"
         :append-to="appendTo"
         @update:model-value="handleColorChange"
+      />
+      <SelectButton
+        :model-value="rule.matchMode"
+        :options="matchModeOptions"
+        option-label="label"
+        option-value="value"
+        @update:model-value="handleMatchModeChange"
       />
     </div>
   </div>

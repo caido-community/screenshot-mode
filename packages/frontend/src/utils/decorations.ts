@@ -7,10 +7,12 @@ import {
 } from "@codemirror/view";
 
 import { isPresent } from "./optional";
+import { escapeRegex } from "./regex";
 
 import {
   HighlightMode,
   type HighlightRule,
+  MatchMode,
   RedactionMode,
   type RedactionRule,
 } from "@/types";
@@ -190,6 +192,10 @@ function getRedactionRanges(
   return ranges;
 }
 
+function resolvePattern(regex: string, matchMode: MatchMode): string {
+  return matchMode === MatchMode.String ? escapeRegex(regex) : regex;
+}
+
 export function applyDecorations(
   view: EditorView,
   highlights: HighlightRule[],
@@ -211,7 +217,10 @@ export function applyDecorations(
 
   const redactedRanges: Array<{ from: number; to: number }> = [];
   for (const rule of redactions) {
-    const matches = findMatches(text, rule.regex);
+    const matches = findMatches(
+      text,
+      resolvePattern(rule.regex, rule.matchMode),
+    );
     for (const match of matches) {
       const ranges = getRedactionRanges(
         match,
@@ -223,7 +232,10 @@ export function applyDecorations(
   }
 
   for (const rule of highlights) {
-    const matches = findMatches(text, rule.regex);
+    const matches = findMatches(
+      text,
+      resolvePattern(rule.regex, rule.matchMode),
+    );
     const decoration = createHighlightDecoration(rule.color, rule.mode);
 
     for (const match of matches) {
@@ -240,7 +252,10 @@ export function applyDecorations(
   }
 
   for (const rule of redactions) {
-    const matches = findMatches(text, rule.regex);
+    const matches = findMatches(
+      text,
+      resolvePattern(rule.regex, rule.matchMode),
+    );
     const decoration = createRedactionDecoration(rule);
 
     for (const match of matches) {
