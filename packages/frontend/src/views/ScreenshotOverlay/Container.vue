@@ -15,6 +15,7 @@ import { useTemplatesStore } from "@/stores/templates";
 import {
   HighlightMode,
   type HighlightRule,
+  MatchMode,
   RedactionMode,
   type RedactionRule,
   type RuleTarget,
@@ -22,7 +23,6 @@ import {
 } from "@/types";
 import { delay } from "@/utils/async";
 import { isPresent } from "@/utils/optional";
-import { escapeRegex } from "@/utils/regex";
 import {
   captureAndCopyToClipboard,
   captureAndDownload,
@@ -248,10 +248,11 @@ function handleAddHighlight(regex: string, target: RuleTarget): void {
 
   const newRule: HighlightRule = {
     id: crypto.randomUUID(),
-    regex: escapeRegex(regex),
+    regex,
     target,
     mode: HighlightMode.Highlight,
     color: DEFAULT_HIGHLIGHT_COLOR,
+    matchMode: MatchMode.String,
   };
 
   handleSettingsChange({
@@ -265,12 +266,13 @@ function handleAddRedaction(regex: string, target: RuleTarget): void {
 
   const newRule: RedactionRule = {
     id: crypto.randomUUID(),
-    regex: escapeRegex(regex),
+    regex,
     target,
     mode: RedactionMode.Replace,
     replacementText: DEFAULT_REDACTION_TEXT,
     useCaptureGroups: false,
     selectedGroups: [],
+    matchMode: MatchMode.String,
   };
 
   handleSettingsChange({

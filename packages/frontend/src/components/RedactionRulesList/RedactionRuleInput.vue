@@ -5,9 +5,12 @@ import ColorPicker from "primevue/colorpicker";
 import InputText from "primevue/inputtext";
 import MultiSelect from "primevue/multiselect";
 import Select from "primevue/select";
+import SelectButton from "primevue/selectbutton";
 import { computed } from "vue";
 
 import {
+  MatchMode,
+  type MatchMode as MatchModeType,
   RedactionMode,
   type RedactionRule,
   RuleTarget,
@@ -43,6 +46,11 @@ const modeOptions = [
   { label: "Blur", value: RedactionMode.Blur },
   { label: "Opaque", value: RedactionMode.Opaque },
   { label: "Replace", value: RedactionMode.Replace },
+];
+
+const matchModeOptions = [
+  { label: "Regex", value: MatchMode.Regex },
+  { label: "String", value: MatchMode.String },
 ];
 
 const captureGroupCount = computed(() => {
@@ -130,6 +138,7 @@ function buildRule(
     replacementText: string;
     useCaptureGroups: boolean;
     selectedGroups: number[];
+    matchMode: MatchModeType;
   }>,
 ): RedactionRule {
   const base = {
@@ -138,6 +147,7 @@ function buildRule(
     target: overrides.target ?? rule.target,
     useCaptureGroups: overrides.useCaptureGroups ?? rule.useCaptureGroups,
     selectedGroups: overrides.selectedGroups ?? rule.selectedGroups,
+    matchMode: overrides.matchMode ?? rule.matchMode,
   };
 
   if (mode === RedactionMode.Opaque) {
@@ -261,6 +271,10 @@ function handleReplacementTextChange(value: string | undefined): void {
     );
   }
 }
+
+function handleMatchModeChange(value: MatchModeType): void {
+  emit("update", buildRule(rule.mode, { matchMode: value }));
+}
 </script>
 
 <template>
@@ -268,7 +282,11 @@ function handleReplacementTextChange(value: string | undefined): void {
     <div class="flex items-center gap-2">
       <InputText
         :model-value="rule.regex"
-        placeholder="Regex pattern"
+        :placeholder="
+          rule.matchMode === MatchMode.String
+            ? 'Literal string'
+            : 'Regex pattern'
+        "
         class="flex-1 font-mono text-sm"
         @update:model-value="handleRegexChange"
       />
@@ -334,6 +352,13 @@ function handleReplacementTextChange(value: string | undefined): void {
         :append-to="appendTo"
         filter
         @update:model-value="handleGroupsChange"
+      />
+      <SelectButton
+        :model-value="rule.matchMode"
+        :options="matchModeOptions"
+        option-label="label"
+        option-value="value"
+        @update:model-value="handleMatchModeChange"
       />
     </div>
   </div>
