@@ -9,11 +9,18 @@ import { Disposition, RuleTarget, type ScreenshotSettings } from "@/types";
 import { applyDecorations } from "@/utils/decorations";
 import { isPresent } from "@/utils/optional";
 
-const { requestRaw, responseRaw, settings, splitterSizes } = defineProps<{
+const {
+  requestRaw,
+  responseRaw,
+  settings,
+  splitterSizes,
+  isCropped = false,
+} = defineProps<{
   requestRaw: string;
   responseRaw: string;
   settings: ScreenshotSettings;
   splitterSizes: [number, number];
+  isCropped?: boolean;
 }>();
 
 const emit = defineEmits<{
@@ -167,6 +174,22 @@ function mountEditors(): void {
 
   updateEditors();
 }
+
+function updateScrollerOverflow(hidden: boolean): void {
+  const reqView = requestEditor.getEditorView();
+  const resView = responseEditor.getEditorView();
+
+  for (const view of [reqView, resView]) {
+    view.scrollDOM.style.overflow = hidden ? "hidden" : "";
+  }
+}
+
+watch(
+  () => isCropped,
+  (cropped) => {
+    updateScrollerOverflow(cropped);
+  },
+);
 
 function handleGlobalClick(): void {
   contextMenuVisible.value = false;
