@@ -7,12 +7,17 @@ import { useTemplatesStore } from "./templates";
 import { type ScreenshotSettings } from "@/types";
 import { isPresent } from "@/utils/optional";
 
+export interface CropSizes {
+  height: number;
+  active: boolean;
+}
+
 export const useTabsStore = defineStore("tabs", () => {
   const { getDefaultTemplate, getTemplateById } = useTemplatesStore();
 
   const tabSettings = ref(new Map<string, ScreenshotSettings>());
   const tabSplitterSizes = ref(new Map<string, [number, number]>());
-  const tabCropSizes = ref(new Map<string, [number, number]>());
+  const tabCropSizes = ref(new Map<string, CropSizes>());
   const tabSelectedTemplateId = ref(new Map<string, string>());
 
   const getTabSettings = (sessionId: string): ScreenshotSettings => {
@@ -59,10 +64,10 @@ export const useTabsStore = defineStore("tabs", () => {
     tabSplitterSizes.value.set(sessionId, sizes);
   };
 
-  const getCropSizes = (sessionId: string): [number, number] => {
-    return tabCropSizes.value.get(sessionId) ?? [97, 3];
+  const getCropSizes = (sessionId: string): CropSizes => {
+    return tabCropSizes.value.get(sessionId) ?? { height: 0, active: false };
   };
-  const setCropSizes = (sessionId: string, sizes: [number, number]): void => {
+  const setCropSizes = (sessionId: string, sizes: CropSizes): void => {
     tabCropSizes.value.set(sessionId, sizes);
   };
 

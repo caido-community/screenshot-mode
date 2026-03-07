@@ -5,6 +5,7 @@ import DataDisplay from "./DataDisplay.vue";
 import UrlHeader from "./UrlHeader.vue";
 
 import { type RuleTarget, type ScreenshotSettings, WidthMode } from "@/types";
+import { isPresent } from "@/utils/optional";
 
 interface DataDisplayExposed {
   clearSelectionsForCapture: () => void;
@@ -90,7 +91,7 @@ defineExpose({
         :response-raw="responseRaw"
         :settings="settings"
         :splitter-sizes="splitterSizes"
-        :is-cropped="cropMaxHeight !== undefined"
+        :is-cropped="isPresent(cropMaxHeight)"
         @add-highlight="(regex, target) => emit('addHighlight', regex, target)"
         @add-redaction="(regex, target) => emit('addRedaction', regex, target)"
         @add-hidden-header="(headerName) => emit('addHiddenHeader', headerName)"

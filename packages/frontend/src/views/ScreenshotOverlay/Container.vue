@@ -5,6 +5,7 @@ import { computed, onMounted, onUnmounted, ref, watch } from "vue";
 
 import { ContentPanel } from "./ContentPanel";
 import SettingsPanel from "./SettingsPanel.vue";
+import { useCrop } from "./useCrop";
 import { useEntry } from "./useEntry";
 import { type ContentPanelExposed, useForm } from "./useForm";
 
@@ -39,8 +40,6 @@ const {
   updateTabSettings,
   getSplitterSizes,
   setSplitterSizes,
-  getCropSizes,
-  setCropSizes,
   getSelectedTemplateId,
   setSelectedTemplateId,
 } = useTabsStore();
@@ -74,63 +73,14 @@ const splitterSizes = computed(() => {
   return getSplitterSizes(sid);
 });
 
-// Drag handle for cropping content height
-const cropMaxHeight = ref<number | undefined>(undefined);
-let isDragging = false;
-let dragStartY = 0;
-let dragStartHeight = 0;
-
-function getCropHeight(): number | undefined {
-  const sid = sessionId.value;
-  if (sid === undefined) return undefined;
-  const stored = getCropSizes(sid);
-
-  return stored[1] === 1 ? stored[0] : undefined;
-}
-
-function saveCropHeight(height: number | undefined): void {
-  const sid = sessionId.value;
-  if (sid === undefined) return;
-  if (height === undefined) {
-    setCropSizes(sid, [0, 0]);
-  } else {
-    setCropSizes(sid, [height, 1]);
-  }
-}
-
-function handleCropDragStart(e: MouseEvent): void {
-  e.preventDefault();
-  isDragging = true;
-  dragStartY = e.clientY;
-  const captureEl = contentPanelComponentRef.value?.getCaptureRootElement();
-  dragStartHeight = cropMaxHeight.value ?? captureEl?.clientHeight ?? 0;
-
-  document.addEventListener("mousemove", handleCropDragMove);
-  document.addEventListener("mouseup", handleCropDragEnd);
-  document.body.style.cursor = "row-resize";
-  document.body.style.userSelect = "none";
-}
-
-function handleCropDragMove(e: MouseEvent): void {
-  if (!isDragging) return;
-  const delta = e.clientY - dragStartY;
-  const newHeight = Math.max(50, dragStartHeight + delta);
-  cropMaxHeight.value = newHeight;
-  saveCropHeight(newHeight);
-}
-
-function handleCropDragEnd(): void {
-  isDragging = false;
-  document.removeEventListener("mousemove", handleCropDragMove);
-  document.removeEventListener("mouseup", handleCropDragEnd);
-  document.body.style.cursor = "";
-  document.body.style.userSelect = "";
-}
-
-function handleCropReset(): void {
-  cropMaxHeight.value = undefined;
-  saveCropHeight(undefined);
-}
+const {
+  cropMaxHeight,
+  restoreCropHeight,
+  handleCropDragStart,
+  handleCropReset,
+} = useCrop(sessionId, () =>
+  contentPanelComponentRef.value?.getCaptureRootElement(),
+);
 
 async function loadSessionData(): Promise<void> {
   const sid = sessionId.value;
@@ -141,7 +91,7 @@ async function loadSessionData(): Promise<void> {
   settings.value = getTabSettings(sid);
   selectedTemplateId.value =
     getSelectedTemplateId(sid) ?? defaultTemplateId.value;
-  cropMaxHeight.value = getCropHeight();
+  restoreCropHeight();
 
   const session = sdk.replay.getCurrentSession();
   if (session === undefined) {
@@ -306,18 +256,10 @@ onMounted(() => {
   if (isVisible.value) {
     loadSessionData();
   }
-
-  // Restore crop height from tab state
-  const stored = getCropHeight();
-  if (stored !== undefined) {
-    cropMaxHeight.value = stored;
-  }
 });
 
 onUnmounted(() => {
   document.removeEventListener("keydown", handleKeydown);
-  document.removeEventListener("mousemove", handleCropDragMove);
-  document.removeEventListener("mouseup", handleCropDragEnd);
 });
 </script>
 
@@ -399,9 +341,8 @@ onUnmounted(() => {
                 @crop-drag-start="handleCropDragStart"
               />
             </div>
-            <!-- Reset height button -->
             <button
-              v-if="cropMaxHeight !== undefined"
+              v-if="isPresent(cropMaxHeight)"
               class="shrink-0 border-t border-surface-600 bg-surface-800 px-2 py-1 text-xs text-surface-400 transition-colors hover:bg-surface-700 hover:text-surface-200"
               @click="handleCropReset"
             >
