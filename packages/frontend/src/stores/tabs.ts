@@ -7,7 +7,7 @@ import { useTemplatesStore } from "./templates";
 import { type ScreenshotSettings } from "@/types";
 import { isPresent } from "@/utils/optional";
 
-export interface CropSizes {
+interface CropSizes {
   height: number;
   active: boolean;
 }
