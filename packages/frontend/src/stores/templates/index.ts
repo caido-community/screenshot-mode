@@ -122,7 +122,7 @@ export const useTemplatesStore = defineStore("templates", () => {
 
   const persistStorage = async () => {
     const data: StoredData = {
-      version: 3,
+      version: 2,
       templates: templates.value,
       defaultTemplateId: defaultTemplateId.value,
     };

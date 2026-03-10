@@ -7,8 +7,6 @@ import {
   V1StoredDataSchema,
   V2StoredDataSchema,
   V2TemplateSchema,
-  V3StoredDataSchema,
-  V3TemplateSchema,
   WidthSettingSchema,
 } from "@/schemas";
 import {
@@ -72,7 +70,7 @@ describe("HighlightRuleSchema", () => {
     expect(result.success).toBe(true);
   });
 
-  it("rejects a rule with missing matchMode", () => {
+  it("accepts a rule without matchMode (defaults to regex)", () => {
     const result = HighlightRuleSchema.safeParse({
       id: "1",
       regex: "test",
@@ -80,7 +78,10 @@ describe("HighlightRuleSchema", () => {
       color: "#ff0000",
       mode: HighlightMode.Highlight,
     });
-    expect(result.success).toBe(false);
+    expect(result.success).toBe(true);
+    if (result.success) {
+      expect(result.data.matchMode).toBe(MatchMode.Regex);
+    }
   });
 
   it("rejects a rule with missing fields", () => {
@@ -171,7 +172,7 @@ describe("RedactionRuleSchema", () => {
     expect(result.success).toBe(false);
   });
 
-  it("rejects redaction without matchMode", () => {
+  it("accepts a redaction without matchMode (defaults to regex)", () => {
     const result = RedactionRuleSchema.safeParse({
       id: "1",
       regex: "secret",
@@ -180,7 +181,10 @@ describe("RedactionRuleSchema", () => {
       useCaptureGroups: false,
       selectedGroups: [],
     });
-    expect(result.success).toBe(false);
+    expect(result.success).toBe(true);
+    if (result.success) {
+      expect(result.data.matchMode).toBe(MatchMode.Regex);
+    }
   });
 });
 
@@ -265,7 +269,38 @@ describe("V1StoredDataSchema", () => {
 });
 
 describe("V2StoredDataSchema", () => {
-  it("accepts version 2 data without matchMode (legacy)", () => {
+  it("accepts version 2 data with rules", () => {
+    const data = {
+      version: 2,
+      templates: [
+        {
+          id: "abc",
+          name: "Default",
+          settings: {
+            headersToHide: { both: [], request: [], response: [] },
+            disposition: Disposition.Horizontal,
+            width: { mode: WidthMode.Full },
+            highlights: [
+              {
+                id: "h1",
+                regex: "test",
+                target: RuleTarget.Request,
+                color: "#ff0000",
+                mode: HighlightMode.Highlight,
+                matchMode: MatchMode.String,
+              },
+            ],
+            redactions: [],
+          },
+        },
+      ],
+      defaultTemplateId: "abc",
+    };
+    const result = V2StoredDataSchema.safeParse(data);
+    expect(result.success).toBe(true);
+  });
+
+  it("accepts version 2 data without matchMode in rules (defaults to regex)", () => {
     const data = {
       version: 2,
       templates: [
@@ -312,83 +347,8 @@ describe("V2StoredDataSchema", () => {
   });
 });
 
-describe("V3StoredDataSchema", () => {
-  it("accepts version 3 data with matchMode in rules", () => {
-    const data = {
-      version: 3,
-      templates: [
-        {
-          id: "abc",
-          name: "Default",
-          settings: {
-            headersToHide: { both: [], request: [], response: [] },
-            disposition: Disposition.Horizontal,
-            width: { mode: WidthMode.Full },
-            highlights: [
-              {
-                id: "h1",
-                regex: "test",
-                target: RuleTarget.Request,
-                color: "#ff0000",
-                mode: HighlightMode.Highlight,
-                matchMode: MatchMode.String,
-              },
-            ],
-            redactions: [],
-          },
-        },
-      ],
-      defaultTemplateId: "abc",
-    };
-    const result = V3StoredDataSchema.safeParse(data);
-    expect(result.success).toBe(true);
-  });
-
-  it("rejects version 2 data", () => {
-    const result = V3StoredDataSchema.safeParse({
-      version: 2,
-      templates: [],
-      defaultTemplateId: "abc",
-    });
-    expect(result.success).toBe(false);
-  });
-
-  it("rejects data without version", () => {
-    const result = V3StoredDataSchema.safeParse({
-      templates: [],
-      defaultTemplateId: "abc",
-    });
-    expect(result.success).toBe(false);
-  });
-
-  it("rejects completely invalid data", () => {
-    expect(V3StoredDataSchema.safeParse(null).success).toBe(false);
-    expect(V3StoredDataSchema.safeParse(undefined).success).toBe(false);
-    expect(V3StoredDataSchema.safeParse("string").success).toBe(false);
-    expect(V3StoredDataSchema.safeParse(42).success).toBe(false);
-  });
-});
-
 describe("V2TemplateSchema", () => {
-  it("accepts a valid v2 template (without matchMode)", () => {
-    const template = {
-      id: "abc",
-      name: "My Template",
-      settings: {
-        headersToHide: { both: [], request: [], response: [] },
-        disposition: Disposition.Vertical,
-        width: { mode: WidthMode.A4 },
-        highlights: [],
-        redactions: [],
-      },
-    };
-    const result = V2TemplateSchema.safeParse(template);
-    expect(result.success).toBe(true);
-  });
-});
-
-describe("V3TemplateSchema", () => {
-  it("accepts a valid v3 template with matchMode", () => {
+  it("accepts a valid template with matchMode", () => {
     const template = {
       id: "abc",
       name: "My Template",
@@ -409,7 +369,23 @@ describe("V3TemplateSchema", () => {
         redactions: [],
       },
     };
-    const result = V3TemplateSchema.safeParse(template);
+    const result = V2TemplateSchema.safeParse(template);
+    expect(result.success).toBe(true);
+  });
+
+  it("accepts a valid template without matchMode (defaults to regex)", () => {
+    const template = {
+      id: "abc",
+      name: "My Template",
+      settings: {
+        headersToHide: { both: [], request: [], response: [] },
+        disposition: Disposition.Vertical,
+        width: { mode: WidthMode.A4 },
+        highlights: [],
+        redactions: [],
+      },
+    };
+    const result = V2TemplateSchema.safeParse(template);
     expect(result.success).toBe(true);
   });
 });

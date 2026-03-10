@@ -12,10 +12,10 @@ import {
 } from "@/types";
 
 describe("migrateStorage", () => {
-  describe("v3 format (current)", () => {
+  describe("v2 format (current)", () => {
     it("returns data as-is when valid", () => {
       const stored = {
-        version: 3,
+        version: 2,
         templates: [
           {
             id: "t1",
@@ -44,12 +44,13 @@ describe("migrateStorage", () => {
       const { data, migrated } = migrateStorage(stored);
 
       expect(migrated).toBe(false);
-      expect(data).toEqual(stored);
+      expect(data.version).toBe(2);
+      expect(data.templates[0]!.settings.highlights[0]!.matchMode).toBe(
+        MatchMode.String,
+      );
     });
-  });
 
-  describe("v2 format (adds matchMode)", () => {
-    it("adds matchMode: regex to all rules", () => {
+    it("returns v2 data without matchMode as-is (defaults applied by schema)", () => {
       const stored = {
         version: 2,
         templates: [
@@ -87,8 +88,8 @@ describe("migrateStorage", () => {
 
       const { data, migrated } = migrateStorage(stored);
 
-      expect(migrated).toBe(true);
-      expect(data.version).toBe(3);
+      expect(migrated).toBe(false);
+      expect(data.version).toBe(2);
       expect(data.templates[0]!.settings.highlights[0]!.matchMode).toBe(
         MatchMode.Regex,
       );
@@ -96,35 +97,10 @@ describe("migrateStorage", () => {
         MatchMode.Regex,
       );
     });
-
-    it("handles v2 data without rules", () => {
-      const stored = {
-        version: 2,
-        templates: [
-          {
-            id: "t1",
-            name: "Default",
-            settings: {
-              headersToHide: { both: [], request: [], response: [] },
-              disposition: Disposition.Horizontal,
-              width: { mode: WidthMode.Full },
-              highlights: [],
-              redactions: [],
-            },
-          },
-        ],
-        defaultTemplateId: "t1",
-      };
-
-      const { data, migrated } = migrateStorage(stored);
-
-      expect(migrated).toBe(true);
-      expect(data.version).toBe(3);
-    });
   });
 
   describe("v1 format (flat headers)", () => {
-    it("migrates flat headers to split format and adds matchMode", () => {
+    it("migrates flat headers to split format", () => {
       const stored = {
         version: 1,
         templates: [
@@ -146,7 +122,7 @@ describe("migrateStorage", () => {
       const { data, migrated } = migrateStorage(stored);
 
       expect(migrated).toBe(true);
-      expect(data.version).toBe(3);
+      expect(data.version).toBe(2);
       expect(data.templates[0]!.settings.headersToHide).toEqual({
         both: ["Accept", "Host"],
         request: [],
@@ -180,7 +156,7 @@ describe("migrateStorage", () => {
       const { data, migrated } = migrateStorage(stored);
 
       expect(migrated).toBe(true);
-      expect(data.version).toBe(3);
+      expect(data.version).toBe(2);
       expect(data.templates[0]!.settings.headersToHide).toEqual({
         both: ["Accept"],
         request: ["Host"],
@@ -202,7 +178,7 @@ describe("migrateStorage", () => {
       const { data, migrated } = migrateStorage(stored);
 
       expect(migrated).toBe(true);
-      expect(data.version).toBe(3);
+      expect(data.version).toBe(2);
       expect(data.templates).toHaveLength(1);
       expect(data.templates[0]!.name).toBe("Default");
       expect(data.templates[0]!.settings.headersToHide).toEqual({
@@ -219,7 +195,7 @@ describe("migrateStorage", () => {
       const { data, migrated } = migrateStorage(null);
 
       expect(migrated).toBe(true);
-      expect(data.version).toBe(3);
+      expect(data.version).toBe(2);
       expect(data.templates).toHaveLength(1);
       expect(data.templates[0]!.settings).toEqual(DEFAULT_SETTINGS);
     });
@@ -228,7 +204,7 @@ describe("migrateStorage", () => {
       const { data, migrated } = migrateStorage(undefined);
 
       expect(migrated).toBe(true);
-      expect(data.version).toBe(3);
+      expect(data.version).toBe(2);
       expect(data.templates[0]!.settings).toEqual(DEFAULT_SETTINGS);
     });
 
@@ -236,7 +212,7 @@ describe("migrateStorage", () => {
       const { data, migrated } = migrateStorage({ foo: "bar" });
 
       expect(migrated).toBe(true);
-      expect(data.version).toBe(3);
+      expect(data.version).toBe(2);
       expect(data.templates[0]!.settings).toEqual(DEFAULT_SETTINGS);
     });
   });

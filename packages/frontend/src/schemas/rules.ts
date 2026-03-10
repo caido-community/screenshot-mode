@@ -9,7 +9,9 @@ const HighlightModeSchema = z.enum([
   HighlightMode.Rectangle,
 ]);
 
-const MatchModeSchema = z.enum([MatchMode.Regex, MatchMode.String]);
+const MatchModeSchema = z
+  .enum([MatchMode.Regex, MatchMode.String])
+  .default(MatchMode.Regex);
 
 export const HighlightRuleSchema = z.object({
   id: z.string(),
