@@ -26,3 +26,5 @@ export const V2StoredDataSchema = z.object({
   templates: z.array(V2TemplateSchema),
   defaultTemplateId: z.string(),
 });
+
+export type V2StoredData = z.infer<typeof V2StoredDataSchema>;

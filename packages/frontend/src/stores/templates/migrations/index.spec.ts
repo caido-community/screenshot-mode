@@ -1,7 +1,15 @@
 import { describe, expect, it } from "vitest";
 
 import { migrateStorage } from "@/stores/templates/migrations";
-import { DEFAULT_SETTINGS, Disposition, WidthMode } from "@/types";
+import {
+  DEFAULT_SETTINGS,
+  Disposition,
+  HighlightMode,
+  MatchMode,
+  RedactionMode,
+  RuleTarget,
+  WidthMode,
+} from "@/types";
 
 describe("migrateStorage", () => {
   describe("v2 format (current)", () => {
@@ -16,7 +24,16 @@ describe("migrateStorage", () => {
               headersToHide: { both: ["Accept"], request: [], response: [] },
               disposition: Disposition.Horizontal,
               width: { mode: WidthMode.Full },
-              highlights: [],
+              highlights: [
+                {
+                  id: "h1",
+                  regex: "test",
+                  target: RuleTarget.Request,
+                  color: "#ff0000",
+                  mode: HighlightMode.Highlight,
+                  matchMode: MatchMode.String,
+                },
+              ],
               redactions: [],
             },
           },
@@ -27,7 +44,58 @@ describe("migrateStorage", () => {
       const { data, migrated } = migrateStorage(stored);
 
       expect(migrated).toBe(false);
-      expect(data).toEqual(stored);
+      expect(data.version).toBe(2);
+      expect(data.templates[0]!.settings.highlights[0]!.matchMode).toBe(
+        MatchMode.String,
+      );
+    });
+
+    it("returns v2 data without matchMode as-is (defaults applied by schema)", () => {
+      const stored = {
+        version: 2,
+        templates: [
+          {
+            id: "t1",
+            name: "Default",
+            settings: {
+              headersToHide: { both: ["Accept"], request: [], response: [] },
+              disposition: Disposition.Horizontal,
+              width: { mode: WidthMode.Full },
+              highlights: [
+                {
+                  id: "h1",
+                  regex: "test",
+                  target: RuleTarget.Request,
+                  color: "#ff0000",
+                  mode: HighlightMode.Highlight,
+                },
+              ],
+              redactions: [
+                {
+                  id: "r1",
+                  regex: "secret",
+                  target: RuleTarget.Response,
+                  mode: RedactionMode.Blur,
+                  useCaptureGroups: false,
+                  selectedGroups: [],
+                },
+              ],
+            },
+          },
+        ],
+        defaultTemplateId: "t1",
+      };
+
+      const { data, migrated } = migrateStorage(stored);
+
+      expect(migrated).toBe(false);
+      expect(data.version).toBe(2);
+      expect(data.templates[0]!.settings.highlights[0]!.matchMode).toBe(
+        MatchMode.Regex,
+      );
+      expect(data.templates[0]!.settings.redactions[0]!.matchMode).toBe(
+        MatchMode.Regex,
+      );
     });
   });
 
@@ -136,6 +204,7 @@ describe("migrateStorage", () => {
       const { data, migrated } = migrateStorage(undefined);
 
       expect(migrated).toBe(true);
+      expect(data.version).toBe(2);
       expect(data.templates[0]!.settings).toEqual(DEFAULT_SETTINGS);
     });
 
@@ -143,6 +212,7 @@ describe("migrateStorage", () => {
       const { data, migrated } = migrateStorage({ foo: "bar" });
 
       expect(migrated).toBe(true);
+      expect(data.version).toBe(2);
       expect(data.templates[0]!.settings).toEqual(DEFAULT_SETTINGS);
     });
   });

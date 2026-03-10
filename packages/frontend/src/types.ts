@@ -26,6 +26,12 @@ export const RedactionMode = {
 } as const;
 export type RedactionMode = (typeof RedactionMode)[keyof typeof RedactionMode];
 
+export const MatchMode = {
+  Regex: "regex",
+  String: "string",
+} as const;
+export type MatchMode = (typeof MatchMode)[keyof typeof MatchMode];
+
 export const RuleTarget = {
   Request: "request",
   Response: "response",

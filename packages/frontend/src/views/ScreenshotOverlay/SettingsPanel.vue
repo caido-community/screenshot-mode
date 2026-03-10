@@ -21,6 +21,7 @@ import {
   type HeaderHideTarget as HeaderHideTargetType,
   HighlightMode,
   type HighlightRule,
+  MatchMode,
   RedactionMode,
   type RedactionRule,
   RuleTarget,
@@ -149,6 +150,7 @@ function handleAddHighlight(): void {
     target: RuleTarget.Request,
     color: "#ffff00",
     mode: HighlightMode.Highlight,
+    matchMode: MatchMode.Regex,
   };
   emit("update", {
     ...settings,
@@ -164,6 +166,7 @@ function handleAddRedaction(): void {
     mode: RedactionMode.Blur,
     useCaptureGroups: false,
     selectedGroups: [],
+    matchMode: MatchMode.Regex,
   };
   emit("update", {
     ...settings,

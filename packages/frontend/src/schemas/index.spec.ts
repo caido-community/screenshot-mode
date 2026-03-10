@@ -12,6 +12,7 @@ import {
 import {
   Disposition,
   HighlightMode,
+  MatchMode,
   RedactionMode,
   RuleTarget,
   WidthMode,
@@ -50,9 +51,37 @@ describe("HighlightRuleSchema", () => {
       target: RuleTarget.Request,
       color: "#ff0000",
       mode: HighlightMode.Highlight,
+      matchMode: MatchMode.Regex,
     };
     const result = HighlightRuleSchema.safeParse(rule);
     expect(result.success).toBe(true);
+  });
+
+  it("accepts a string match mode", () => {
+    const rule = {
+      id: "1",
+      regex: ".asdf=^asdf$;?",
+      target: RuleTarget.Request,
+      color: "#ff0000",
+      mode: HighlightMode.Highlight,
+      matchMode: MatchMode.String,
+    };
+    const result = HighlightRuleSchema.safeParse(rule);
+    expect(result.success).toBe(true);
+  });
+
+  it("accepts a rule without matchMode (defaults to regex)", () => {
+    const result = HighlightRuleSchema.safeParse({
+      id: "1",
+      regex: "test",
+      target: RuleTarget.Request,
+      color: "#ff0000",
+      mode: HighlightMode.Highlight,
+    });
+    expect(result.success).toBe(true);
+    if (result.success) {
+      expect(result.data.matchMode).toBe(MatchMode.Regex);
+    }
   });
 
   it("rejects a rule with missing fields", () => {
@@ -81,6 +110,7 @@ describe("RedactionRuleSchema", () => {
       mode: RedactionMode.Blur,
       useCaptureGroups: false,
       selectedGroups: [],
+      matchMode: MatchMode.Regex,
     };
     const result = RedactionRuleSchema.safeParse(rule);
     expect(result.success).toBe(true);
@@ -95,6 +125,7 @@ describe("RedactionRuleSchema", () => {
       color: "#000000",
       useCaptureGroups: false,
       selectedGroups: [],
+      matchMode: MatchMode.Regex,
     };
     const result = RedactionRuleSchema.safeParse(rule);
     expect(result.success).toBe(true);
@@ -108,6 +139,7 @@ describe("RedactionRuleSchema", () => {
       mode: RedactionMode.Opaque,
       useCaptureGroups: false,
       selectedGroups: [],
+      matchMode: MatchMode.Regex,
     });
     expect(result.success).toBe(false);
   });
@@ -121,6 +153,7 @@ describe("RedactionRuleSchema", () => {
       replacementText: "[REDACTED]",
       useCaptureGroups: true,
       selectedGroups: [1],
+      matchMode: MatchMode.String,
     };
     const result = RedactionRuleSchema.safeParse(rule);
     expect(result.success).toBe(true);
@@ -134,8 +167,24 @@ describe("RedactionRuleSchema", () => {
       mode: RedactionMode.Replace,
       useCaptureGroups: false,
       selectedGroups: [],
+      matchMode: MatchMode.Regex,
     });
     expect(result.success).toBe(false);
+  });
+
+  it("accepts a redaction without matchMode (defaults to regex)", () => {
+    const result = RedactionRuleSchema.safeParse({
+      id: "1",
+      regex: "secret",
+      target: RuleTarget.Response,
+      mode: RedactionMode.Blur,
+      useCaptureGroups: false,
+      selectedGroups: [],
+    });
+    expect(result.success).toBe(true);
+    if (result.success) {
+      expect(result.data.matchMode).toBe(MatchMode.Regex);
+    }
   });
 });
 
@@ -220,7 +269,38 @@ describe("V1StoredDataSchema", () => {
 });
 
 describe("V2StoredDataSchema", () => {
-  it("accepts version 2 data with split headers", () => {
+  it("accepts version 2 data with rules", () => {
+    const data = {
+      version: 2,
+      templates: [
+        {
+          id: "abc",
+          name: "Default",
+          settings: {
+            headersToHide: { both: [], request: [], response: [] },
+            disposition: Disposition.Horizontal,
+            width: { mode: WidthMode.Full },
+            highlights: [
+              {
+                id: "h1",
+                regex: "test",
+                target: RuleTarget.Request,
+                color: "#ff0000",
+                mode: HighlightMode.Highlight,
+                matchMode: MatchMode.String,
+              },
+            ],
+            redactions: [],
+          },
+        },
+      ],
+      defaultTemplateId: "abc",
+    };
+    const result = V2StoredDataSchema.safeParse(data);
+    expect(result.success).toBe(true);
+  });
+
+  it("accepts version 2 data without matchMode in rules (defaults to regex)", () => {
     const data = {
       version: 2,
       templates: [
@@ -268,7 +348,32 @@ describe("V2StoredDataSchema", () => {
 });
 
 describe("V2TemplateSchema", () => {
-  it("accepts a valid template", () => {
+  it("accepts a valid template with matchMode", () => {
+    const template = {
+      id: "abc",
+      name: "My Template",
+      settings: {
+        headersToHide: { both: [], request: [], response: [] },
+        disposition: Disposition.Vertical,
+        width: { mode: WidthMode.A4 },
+        highlights: [
+          {
+            id: "h1",
+            regex: "password",
+            target: RuleTarget.Request,
+            color: "#ffff00",
+            mode: HighlightMode.Highlight,
+            matchMode: MatchMode.String,
+          },
+        ],
+        redactions: [],
+      },
+    };
+    const result = V2TemplateSchema.safeParse(template);
+    expect(result.success).toBe(true);
+  });
+
+  it("accepts a valid template without matchMode (defaults to regex)", () => {
     const template = {
       id: "abc",
       name: "My Template",
