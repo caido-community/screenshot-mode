@@ -2,12 +2,16 @@ import { z } from "zod";
 
 import { RuleTargetSchema } from "./common";
 
-import { HighlightMode, RedactionMode } from "@/types";
+import { HighlightMode, MatchMode, RedactionMode } from "@/types";
 
 const HighlightModeSchema = z.enum([
   HighlightMode.Highlight,
   HighlightMode.Rectangle,
 ]);
+
+const MatchModeSchema = z
+  .enum([MatchMode.Regex, MatchMode.String])
+  .default(MatchMode.Regex);
 
 export const HighlightRuleSchema = z.object({
   id: z.string(),
@@ -15,6 +19,7 @@ export const HighlightRuleSchema = z.object({
   target: RuleTargetSchema,
   color: z.string(),
   mode: HighlightModeSchema,
+  matchMode: MatchModeSchema,
 });
 
 const RedactionRuleBaseSchema = z.object({
@@ -23,6 +28,7 @@ const RedactionRuleBaseSchema = z.object({
   target: RuleTargetSchema,
   useCaptureGroups: z.boolean(),
   selectedGroups: z.array(z.number()),
+  matchMode: MatchModeSchema,
 });
 
 const RedactionModeSpecificSchema = z.discriminatedUnion("mode", [

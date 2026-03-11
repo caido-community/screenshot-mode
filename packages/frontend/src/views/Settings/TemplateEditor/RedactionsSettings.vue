@@ -2,7 +2,12 @@
 import Button from "primevue/button";
 
 import { RedactionRulesList } from "@/components/RedactionRulesList";
-import { RedactionMode, type RedactionRule, RuleTarget } from "@/types";
+import {
+  MatchMode,
+  RedactionMode,
+  type RedactionRule,
+  RuleTarget,
+} from "@/types";
 
 const model = defineModel<RedactionRule[]>({ required: true });
 
@@ -14,6 +19,7 @@ function handleAdd(): void {
     mode: RedactionMode.Blur,
     useCaptureGroups: false,
     selectedGroups: [],
+    matchMode: MatchMode.Regex,
   };
   model.value = [...model.value, newRule];
 }

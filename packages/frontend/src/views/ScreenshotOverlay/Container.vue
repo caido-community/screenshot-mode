@@ -5,6 +5,7 @@ import { computed, onMounted, onUnmounted, ref, watch } from "vue";
 
 import { ContentPanel } from "./ContentPanel";
 import SettingsPanel from "./SettingsPanel.vue";
+import { useCrop } from "./useCrop";
 import { useEntry } from "./useEntry";
 import { type ContentPanelExposed, useForm } from "./useForm";
 
@@ -15,6 +16,7 @@ import { useTemplatesStore } from "@/stores/templates";
 import {
   HighlightMode,
   type HighlightRule,
+  MatchMode,
   RedactionMode,
   type RedactionRule,
   type RuleTarget,
@@ -22,7 +24,6 @@ import {
 } from "@/types";
 import { delay } from "@/utils/async";
 import { isPresent } from "@/utils/optional";
-import { escapeRegex } from "@/utils/regex";
 import {
   captureAndCopyToClipboard,
   captureAndDownload,
@@ -54,7 +55,6 @@ const urlInfo = ref<{ url: string; sni: string | undefined }>({
   url: "",
   sni: undefined,
 });
-const contentPanelRef = ref<HTMLElement | undefined>(undefined);
 
 const contentPanelComponentRef = ref<ContentPanelExposed | undefined>(
   undefined,
@@ -73,6 +73,15 @@ const splitterSizes = computed(() => {
   return getSplitterSizes(sid);
 });
 
+const {
+  cropMaxHeight,
+  restoreCropHeight,
+  handleCropDragStart,
+  handleCropReset,
+} = useCrop(sessionId, () =>
+  contentPanelComponentRef.value?.getCaptureRootElement(),
+);
+
 async function loadSessionData(): Promise<void> {
   const sid = sessionId.value;
   if (sid === undefined) {
@@ -82,6 +91,7 @@ async function loadSessionData(): Promise<void> {
   settings.value = getTabSettings(sid);
   selectedTemplateId.value =
     getSelectedTemplateId(sid) ?? defaultTemplateId.value;
+  restoreCropHeight();
 
   const session = sdk.replay.getCurrentSession();
   if (session === undefined) {
@@ -188,10 +198,11 @@ function handleAddHighlight(regex: string, target: RuleTarget): void {
 
   const newRule: HighlightRule = {
     id: crypto.randomUUID(),
-    regex: escapeRegex(regex),
+    regex,
     target,
     mode: HighlightMode.Highlight,
     color: DEFAULT_HIGHLIGHT_COLOR,
+    matchMode: MatchMode.String,
   };
 
   handleSettingsChange({
@@ -205,12 +216,13 @@ function handleAddRedaction(regex: string, target: RuleTarget): void {
 
   const newRule: RedactionRule = {
     id: crypto.randomUUID(),
-    regex: escapeRegex(regex),
+    regex,
     target,
     mode: RedactionMode.Replace,
     replacementText: DEFAULT_REDACTION_TEXT,
     useCaptureGroups: false,
     selectedGroups: [],
+    matchMode: MatchMode.String,
   };
 
   handleSettingsChange({
@@ -307,8 +319,8 @@ onUnmounted(() => {
             />
           </div>
 
-          <div class="flex flex-1 bg-surface-900">
-            <div ref="contentPanelRef" class="flex flex-1 justify-center">
+          <div class="flex flex-1 flex-col overflow-hidden bg-surface-900">
+            <div class="flex flex-1 justify-center overflow-auto">
               <ContentPanel
                 v-if="isPresent(settings)"
                 ref="contentPanelComponentRef"
@@ -318,6 +330,7 @@ onUnmounted(() => {
                 :url="urlInfo.url"
                 :sni="urlInfo.sni"
                 :splitter-sizes="splitterSizes"
+                :crop-max-height="cropMaxHeight"
                 @add-highlight="handleAddHighlight"
                 @add-redaction="handleAddRedaction"
                 @add-hidden-header="handleAddHiddenHeader"
@@ -327,8 +340,16 @@ onUnmounted(() => {
                     if (sid !== undefined) setSplitterSizes(sid, sizes);
                   }
                 "
+                @crop-drag-start="handleCropDragStart"
               />
             </div>
+            <button
+              v-if="isPresent(cropMaxHeight)"
+              class="shrink-0 border-t border-surface-600 bg-surface-800 px-2 py-1 text-xs text-surface-400 transition-colors hover:bg-surface-700 hover:text-surface-200"
+              @click="handleCropReset"
+            >
+              Reset Height
+            </button>
           </div>
         </div>
       </div>

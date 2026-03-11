@@ -2,7 +2,12 @@
 import Button from "primevue/button";
 
 import { HighlightRulesList } from "@/components/HighlightRulesList";
-import { HighlightMode, type HighlightRule, RuleTarget } from "@/types";
+import {
+  HighlightMode,
+  type HighlightRule,
+  MatchMode,
+  RuleTarget,
+} from "@/types";
 
 const model = defineModel<HighlightRule[]>({ required: true });
 
@@ -13,6 +18,7 @@ function handleAdd(): void {
     target: RuleTarget.Request,
     color: "#ffff00",
     mode: HighlightMode.Highlight,
+    matchMode: MatchMode.Regex,
   };
   model.value = [...model.value, newRule];
 }

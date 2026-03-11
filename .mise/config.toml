@@ -1,0 +1,10 @@
+[tasks.validate]
+description = "Run all checks: install, lint, typecheck, test, build"
+run = """
+pnpm i
+pnpm lint
+pnpm typecheck
+pnpm test
+pnpm knip
+pnpm build
+"""
