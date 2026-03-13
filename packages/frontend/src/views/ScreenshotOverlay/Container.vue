@@ -6,8 +6,8 @@ import { computed, onMounted, onUnmounted, ref, watch } from "vue";
 import { ContentPanel } from "./ContentPanel";
 import SettingsPanel from "./SettingsPanel.vue";
 import { useCrop } from "./useCrop";
-import { useEntry } from "./useEntry";
 import { type ContentPanelExposed, useForm } from "./useForm";
+import { useRequestData } from "./useRequestData";
 
 import { useSDK } from "@/plugins/sdk";
 import { closeOverlay, getOverlayState } from "@/stores/overlay";
@@ -33,7 +33,8 @@ const DEFAULT_HIGHLIGHT_COLOR = "#ffff00";
 const DEFAULT_REDACTION_TEXT = "[REDACTED]";
 
 const sdk = useSDK();
-const { getActiveRequestId } = useEntry();
+const { requestRaw, responseRaw, urlInfo, loadFromSession, loadFromRequest } =
+  useRequestData();
 const {
   getTabSettings,
   setTabSettingsFromTemplate,
@@ -49,12 +50,6 @@ const overlayState = getOverlayState();
 
 const settings = ref<ScreenshotSettings | undefined>(undefined);
 const selectedTemplateId = ref<string>("");
-const requestRaw = ref<string>("");
-const responseRaw = ref<string>("");
-const urlInfo = ref<{ url: string; sni: string | undefined }>({
-  url: "",
-  sni: undefined,
-});
 
 const contentPanelComponentRef = ref<ContentPanelExposed | undefined>(
   undefined,
@@ -62,15 +57,17 @@ const contentPanelComponentRef = ref<ContentPanelExposed | undefined>(
 
 const isVisible = computed(() => overlayState.value.isOpen);
 const sessionId = computed(() => overlayState.value.sessionId);
+const requestId = computed(() => overlayState.value.requestId);
+const tabKey = computed(() => sessionId.value ?? requestId.value);
 const { handleSaveAsNewTemplate, handleUpdateCurrentTemplate } = useForm(
   settings,
-  sessionId,
+  tabKey,
   selectedTemplateId,
 );
 const splitterSizes = computed(() => {
-  const sid = sessionId.value;
-  if (sid === undefined) return [50, 50] as [number, number];
-  return getSplitterSizes(sid);
+  const key = tabKey.value;
+  if (key === undefined) return [50, 50] as [number, number];
+  return getSplitterSizes(key);
 });
 
 const {
@@ -78,80 +75,55 @@ const {
   restoreCropHeight,
   handleCropDragStart,
   handleCropReset,
-} = useCrop(sessionId, () =>
+} = useCrop(tabKey, () =>
   contentPanelComponentRef.value?.getCaptureRootElement(),
 );
 
-async function loadSessionData(): Promise<void> {
-  const sid = sessionId.value;
-  if (sid === undefined) {
+async function loadOverlayData(): Promise<void> {
+  const key = tabKey.value;
+  if (key === undefined) {
     return;
   }
 
-  settings.value = getTabSettings(sid);
+  settings.value = getTabSettings(key);
   selectedTemplateId.value =
-    getSelectedTemplateId(sid) ?? defaultTemplateId.value;
+    getSelectedTemplateId(key) ?? defaultTemplateId.value;
   restoreCropHeight();
 
-  const session = sdk.replay.getCurrentSession();
-  if (session === undefined) {
-    return;
-  }
-
-  const activeRequestId = await getActiveRequestId();
-  if (activeRequestId === undefined) {
-    return;
-  }
-
-  const requestData = await sdk.graphql.request({ id: activeRequestId });
-  const request = requestData.request;
-  if (request === undefined || request === null) {
-    return;
-  }
-
-  requestRaw.value = request.raw ?? "";
-  urlInfo.value = {
-    url: `${request.isTls ? "https" : "http"}://${request.host}:${
-      request.port
-    }${request.path}${request.query ?? ""}`,
-    sni: request.sni ?? undefined,
-  };
-
-  if (isPresent(request.response)) {
-    const responseData = await sdk.graphql.response({
-      id: request.response.id,
-    });
-    responseRaw.value = responseData.response?.raw ?? "";
+  if (isPresent(sessionId.value)) {
+    await loadFromSession();
+  } else if (isPresent(requestId.value)) {
+    await loadFromRequest(requestId.value);
   }
 }
 
 function handleSettingsChange(newSettings: ScreenshotSettings): void {
-  const sid = sessionId.value;
-  if (sid === undefined) {
+  const key = tabKey.value;
+  if (key === undefined) {
     return;
   }
 
-  settings.value = updateTabSettings(sid, newSettings);
+  settings.value = updateTabSettings(key, newSettings);
 }
 
 function handleTemplateChange(templateId: string): void {
-  const sid = sessionId.value;
-  if (sid === undefined) {
+  const key = tabKey.value;
+  if (key === undefined) {
     return;
   }
 
   selectedTemplateId.value = templateId;
-  settings.value = setTabSettingsFromTemplate(sid, templateId);
-  setSelectedTemplateId(sid, templateId);
+  settings.value = setTabSettingsFromTemplate(key, templateId);
+  setSelectedTemplateId(key, templateId);
 }
 
 function handleResetToTemplate(): void {
-  const sid = sessionId.value;
-  if (sid === undefined) {
+  const key = tabKey.value;
+  if (key === undefined) {
     return;
   }
 
-  settings.value = setTabSettingsFromTemplate(sid, selectedTemplateId.value);
+  settings.value = setTabSettingsFromTemplate(key, selectedTemplateId.value);
 }
 
 function handleKeydown(event: KeyboardEvent): void {
@@ -245,10 +217,10 @@ function handleAddHiddenHeader(headerName: string): void {
 }
 
 watch(
-  () => overlayState.value.sessionId,
+  () => tabKey.value,
   () => {
     if (overlayState.value.isOpen) {
-      loadSessionData();
+      loadOverlayData();
     }
   },
 );
@@ -256,7 +228,7 @@ watch(
 onMounted(() => {
   document.addEventListener("keydown", handleKeydown);
   if (isVisible.value) {
-    loadSessionData();
+    loadOverlayData();
   }
 });
 
@@ -336,8 +308,8 @@ onUnmounted(() => {
                 @add-hidden-header="handleAddHiddenHeader"
                 @update-splitter-sizes="
                   (sizes) => {
-                    const sid = sessionId;
-                    if (sid !== undefined) setSplitterSizes(sid, sizes);
+                    const key = tabKey;
+                    if (key !== undefined) setSplitterSizes(key, sizes);
                   }
                 "
                 @crop-drag-start="handleCropDragStart"
