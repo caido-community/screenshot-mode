@@ -300,6 +300,35 @@ describe("V2StoredDataSchema", () => {
     expect(result.success).toBe(true);
   });
 
+  it("accepts version 2 data without headersToShow (defaults to empty)", () => {
+    const data = {
+      version: 2,
+      templates: [
+        {
+          id: "abc",
+          name: "Default",
+          settings: {
+            headersToHide: { both: ["Accept"], request: [], response: [] },
+            disposition: Disposition.Horizontal,
+            width: { mode: WidthMode.Full },
+            highlights: [],
+            redactions: [],
+          },
+        },
+      ],
+      defaultTemplateId: "abc",
+    };
+    const result = V2StoredDataSchema.safeParse(data);
+    expect(result.success).toBe(true);
+    if (result.success) {
+      expect(result.data.templates[0]!.settings.headersToShow).toEqual({
+        both: [],
+        request: [],
+        response: [],
+      });
+    }
+  });
+
   it("accepts version 2 data without matchMode in rules (defaults to regex)", () => {
     const data = {
       version: 2,

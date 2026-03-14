@@ -6,10 +6,10 @@ import { computed, ref } from "vue";
 import {
   HeaderTarget,
   type HeaderTarget as HeaderTargetType,
-  type HiddenHeaders,
+  type ShownHeaders,
 } from "@/types";
 
-const model = defineModel<HiddenHeaders>({ required: true });
+const model = defineModel<ShownHeaders>({ required: true });
 
 const headerTargetOptions = [
   { label: "Both", value: HeaderTarget.Both },
@@ -37,14 +37,14 @@ const headersText = computed({
       <div
         class="flex h-5 w-5 items-center justify-center rounded bg-surface-600"
       >
-        <i class="fas fa-eye-slash text-xs text-surface-300" />
+        <i class="fas fa-eye text-xs text-surface-300" />
       </div>
       <label class="text-sm font-medium text-surface-200"
-        >Headers to Hide</label
+        >Headers to Show</label
       >
     </div>
     <p class="mb-2 text-xs text-surface-400">
-      Choose which side to hide headers from
+      Always show these headers, even if hidden
     </p>
     <SelectButton
       v-model="headerTarget"
@@ -55,7 +55,7 @@ const headersText = computed({
     />
     <Textarea
       v-model="headersText"
-      placeholder="Enter headers to hide, one per line"
+      placeholder="Enter headers to always show, one per line"
       class="min-h-32 w-full flex-1 font-mono text-sm"
       :pt="{
         root: { style: 'resize: vertical' },

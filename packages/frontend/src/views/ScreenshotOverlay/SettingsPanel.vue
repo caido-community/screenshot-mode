@@ -17,8 +17,8 @@ import { useTemplatesStore } from "@/stores/templates";
 import {
   Disposition,
   type Disposition as DispositionType,
-  HeaderHideTarget,
-  type HeaderHideTarget as HeaderHideTargetType,
+  HeaderTarget,
+  type HeaderTarget as HeaderTargetType,
   HighlightMode,
   type HighlightRule,
   MatchMode,
@@ -74,15 +74,16 @@ const widthOptions = [
 ];
 
 const headerTargetOptions = [
-  { label: "Both", value: HeaderHideTarget.Both },
-  { label: "Request", value: HeaderHideTarget.Request },
-  { label: "Response", value: HeaderHideTarget.Response },
+  { label: "Both", value: HeaderTarget.Both },
+  { label: "Request", value: HeaderTarget.Request },
+  { label: "Response", value: HeaderTarget.Response },
 ];
 
-const headerTarget = ref<HeaderHideTargetType>(HeaderHideTarget.Both);
+const headerHideTarget = ref<HeaderTargetType>(HeaderTarget.Both);
+const headerShowTarget = ref<HeaderTargetType>(HeaderTarget.Both);
 
-const headersText = computed({
-  get: () => settings.headersToHide[headerTarget.value].join("\n"),
+const headersHideText = computed({
+  get: () => settings.headersToHide[headerHideTarget.value].join("\n"),
   set: (value: string) => {
     const headers = value
       .split("\n")
@@ -92,7 +93,24 @@ const headersText = computed({
       ...settings,
       headersToHide: {
         ...settings.headersToHide,
-        [headerTarget.value]: headers,
+        [headerHideTarget.value]: headers,
+      },
+    });
+  },
+});
+
+const headersShowText = computed({
+  get: () => settings.headersToShow[headerShowTarget.value].join("\n"),
+  set: (value: string) => {
+    const headers = value
+      .split("\n")
+      .map((h) => h.trim())
+      .filter((h) => h.length > 0);
+    emit("update", {
+      ...settings,
+      headersToShow: {
+        ...settings.headersToShow,
+        [headerShowTarget.value]: headers,
       },
     });
   },
@@ -269,16 +287,40 @@ function createTemplate() {
         <p class="text-xs text-surface-400">One header per line</p>
       </div>
       <SelectButton
-        v-model="headerTarget"
+        v-model="headerHideTarget"
         :options="headerTargetOptions"
         option-label="label"
         option-value="value"
         class="mb-2 w-full"
       />
       <Textarea
-        v-model="headersText"
+        v-model="headersHideText"
         rows="4"
         placeholder="Enter headers to hide"
+        class="w-full font-mono text-sm"
+      />
+    </div>
+
+    <div>
+      <div class="mb-2">
+        <label class="block text-sm font-medium text-surface-200">
+          Headers to Show
+        </label>
+        <p class="text-xs text-surface-400">
+          Always show these headers, even if hidden
+        </p>
+      </div>
+      <SelectButton
+        v-model="headerShowTarget"
+        :options="headerTargetOptions"
+        option-label="label"
+        option-value="value"
+        class="mb-2 w-full"
+      />
+      <Textarea
+        v-model="headersShowText"
+        rows="4"
+        placeholder="Enter headers to always show"
         class="w-full font-mono text-sm"
       />
     </div>
