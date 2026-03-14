@@ -7,6 +7,7 @@ import HeadersSettings from "./HeadersSettings.vue";
 import HighlightsSettings from "./HighlightsSettings.vue";
 import LayoutSettings from "./LayoutSettings.vue";
 import RedactionsSettings from "./RedactionsSettings.vue";
+import ShowHeadersSettings from "./ShowHeadersSettings.vue";
 import WidthSettings from "./WidthSettings.vue";
 
 import { useSDK } from "@/plugins/sdk";
@@ -18,6 +19,7 @@ import {
   type HighlightRule,
   type RedactionRule,
   type ScreenshotSettings,
+  type ShownHeaders,
   type Template,
   type WidthSetting,
 } from "@/types";
@@ -46,6 +48,13 @@ const headersToHide = computed({
   get: () => settings.value.headersToHide,
   set: (value: HiddenHeaders) => {
     settings.value = { ...settings.value, headersToHide: value };
+  },
+});
+
+const headersToShow = computed({
+  get: () => settings.value.headersToShow,
+  set: (value: ShownHeaders) => {
+    settings.value = { ...settings.value, headersToShow: value };
   },
 });
 
@@ -152,6 +161,7 @@ async function handleSave(): Promise<void> {
       <div class="grid flex-1 gap-6 lg:grid-cols-2">
         <div class="flex flex-col gap-4">
           <HeadersSettings v-model="headersToHide" />
+          <ShowHeadersSettings v-model="headersToShow" />
           <LayoutSettings v-model="disposition" />
           <WidthSettings v-model="width" />
         </div>

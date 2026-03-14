@@ -51,12 +51,17 @@ const contextMenuPosition = ref({ x: 0, y: 0 });
 const selectedText = ref("");
 const selectionTarget = ref<RuleTarget>(RuleTarget.Request);
 
-function filterHeaders(raw: string, headersToHide: string[]): string {
-  if (headersToHide.length === 0) {
+function filterHeaders(
+  raw: string,
+  headersToHide: string[],
+  headersToShow: string[],
+): string {
+  if (headersToHide.length === 0 && headersToShow.length === 0) {
     return raw;
   }
 
-  const lowerHeaders = headersToHide.map((h) => h.toLowerCase());
+  const lowerHide = headersToHide.map((h) => h.toLowerCase());
+  const lowerShow = headersToShow.map((h) => h.toLowerCase());
   const lines = raw.split("\r\n");
   const filteredLines: string[] = [];
   let inBody = false;
@@ -76,7 +81,14 @@ function filterHeaders(raw: string, headersToHide: string[]): string {
     const colonIndex = line.indexOf(":");
     if (colonIndex > 0) {
       const headerName = line.substring(0, colonIndex).toLowerCase();
-      if (!lowerHeaders.includes(headerName)) {
+      const isShowListed = lowerShow.includes(headerName);
+      const isHideListed = lowerHide.includes(headerName);
+
+      if (lowerShow.length > 0) {
+        if (isShowListed || !isHideListed) {
+          filteredLines.push(line);
+        }
+      } else if (!isHideListed) {
         filteredLines.push(line);
       }
     } else {
@@ -96,8 +108,24 @@ function updateEditors(): void {
     ...settings.headersToHide.both,
     ...settings.headersToHide.response,
   ];
-  const filteredRequest = filterHeaders(requestRaw, requestHeadersToHide);
-  const filteredResponse = filterHeaders(responseRaw, responseHeadersToHide);
+  const requestHeadersToShow = [
+    ...settings.headersToShow.both,
+    ...settings.headersToShow.request,
+  ];
+  const responseHeadersToShow = [
+    ...settings.headersToShow.both,
+    ...settings.headersToShow.response,
+  ];
+  const filteredRequest = filterHeaders(
+    requestRaw,
+    requestHeadersToHide,
+    requestHeadersToShow,
+  );
+  const filteredResponse = filterHeaders(
+    responseRaw,
+    responseHeadersToHide,
+    responseHeadersToShow,
+  );
 
   const requestView = requestEditor.getEditorView();
   const responseView = responseEditor.getEditorView();
@@ -136,6 +164,7 @@ watch(
     requestRaw,
     responseRaw,
     settings.headersToHide,
+    settings.headersToShow,
     settings.highlights,
     settings.redactions,
   ],
