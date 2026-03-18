@@ -7,6 +7,7 @@ import { SelectionContextMenu } from "@/components/SelectionContextMenu";
 import { useSDK } from "@/plugins/sdk";
 import { Disposition, RuleTarget, type ScreenshotSettings } from "@/types";
 import { applyDecorations } from "@/utils/decorations";
+import { filterHeaders } from "@/utils/headers";
 import { isPresent } from "@/utils/optional";
 
 const {
@@ -51,53 +52,17 @@ const contextMenuPosition = ref({ x: 0, y: 0 });
 const selectedText = ref("");
 const selectionTarget = ref<RuleTarget>(RuleTarget.Request);
 
-function filterHeaders(raw: string, headersToHide: string[]): string {
-  if (headersToHide.length === 0) {
-    return raw;
-  }
-
-  const lowerHeaders = headersToHide.map((h) => h.toLowerCase());
-  const lines = raw.split("\r\n");
-  const filteredLines: string[] = [];
-  let inBody = false;
-
-  for (const line of lines) {
-    if (inBody) {
-      filteredLines.push(line);
-      continue;
-    }
-
-    if (line === "") {
-      inBody = true;
-      filteredLines.push(line);
-      continue;
-    }
-
-    const colonIndex = line.indexOf(":");
-    if (colonIndex > 0) {
-      const headerName = line.substring(0, colonIndex).toLowerCase();
-      if (!lowerHeaders.includes(headerName)) {
-        filteredLines.push(line);
-      }
-    } else {
-      filteredLines.push(line);
-    }
-  }
-
-  return filteredLines.join("\r\n");
-}
-
 function updateEditors(): void {
-  const requestHeadersToHide = [
+  const requestHeaderRules = [
     ...settings.headersToHide.both,
     ...settings.headersToHide.request,
   ];
-  const responseHeadersToHide = [
+  const responseHeaderRules = [
     ...settings.headersToHide.both,
     ...settings.headersToHide.response,
   ];
-  const filteredRequest = filterHeaders(requestRaw, requestHeadersToHide);
-  const filteredResponse = filterHeaders(responseRaw, responseHeadersToHide);
+  const filteredRequest = filterHeaders(requestRaw, requestHeaderRules);
+  const filteredResponse = filterHeaders(responseRaw, responseHeaderRules);
 
   const requestView = requestEditor.getEditorView();
   const responseView = responseEditor.getEditorView();

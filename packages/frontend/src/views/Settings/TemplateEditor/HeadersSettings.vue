@@ -44,7 +44,7 @@ const headersText = computed({
       >
     </div>
     <p class="mb-2 text-xs text-surface-400">
-      Choose which side to hide headers from
+      One header per line. Prefix with ! to always show
     </p>
     <SelectButton
       v-model="headerTarget"
