@@ -266,7 +266,9 @@ function createTemplate() {
         <label class="block text-sm font-medium text-surface-200">
           Headers to Hide
         </label>
-        <p class="text-xs text-surface-400">One header per line</p>
+        <p class="text-xs text-surface-400">
+          One header per line. Prefix with ! to always show
+        </p>
       </div>
       <SelectButton
         v-model="headerTarget"

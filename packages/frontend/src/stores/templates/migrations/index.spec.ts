@@ -186,6 +186,7 @@ describe("migrateStorage", () => {
         request: [],
         response: [],
       });
+
       expect(data.defaultTemplateId).toBe(data.templates[0]!.id);
     });
   });
