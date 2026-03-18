@@ -2,14 +2,14 @@ import { ref, type Ref } from "vue";
 
 type OverlayState = {
   isOpen: boolean;
-  sessionId: string | undefined;
-  requestId: string | undefined;
-};
+} & (
+  | { sessionId: string; requestId?: never }
+  | { requestId: string; sessionId?: never }
+  | { sessionId?: never; requestId?: never }
+);
 
 const overlayState: Ref<OverlayState> = ref({
   isOpen: false,
-  sessionId: undefined,
-  requestId: undefined,
 });
 
 export function getOverlayState(): Ref<OverlayState> {
@@ -20,14 +20,12 @@ export function openOverlay(sessionId: string): void {
   overlayState.value = {
     isOpen: true,
     sessionId,
-    requestId: undefined,
   };
 }
 
 export function openOverlayWithRequest(requestId: string): void {
   overlayState.value = {
     isOpen: true,
-    sessionId: undefined,
     requestId,
   };
 }
@@ -35,7 +33,5 @@ export function openOverlayWithRequest(requestId: string): void {
 export function closeOverlay(): void {
   overlayState.value = {
     isOpen: false,
-    sessionId: undefined,
-    requestId: undefined,
   };
 }
