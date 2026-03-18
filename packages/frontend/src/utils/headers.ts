@@ -1,10 +1,3 @@
-/**
- * Filters headers from raw HTTP content based on header rules.
- *
- * Rules are header names, one per entry:
- * - `Accept` — hides the Accept header
- * - `!Content-Type` — always shows Content-Type, even if another rule hides it
- */
 export function filterHeaders(raw: string, headerRules: string[]): string {
   if (headerRules.length === 0) {
     return raw;
