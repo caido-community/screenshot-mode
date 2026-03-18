@@ -5,7 +5,6 @@ import {
   type HiddenHeadersSchema,
   type HighlightRuleSchema,
   type RedactionRuleSchema,
-  type ShownHeadersSchema,
   type V2SettingsSchema,
   type V2StoredDataSchema,
   type V2TemplateSchema,
@@ -39,12 +38,13 @@ export const RuleTarget = {
 } as const;
 export type RuleTarget = (typeof RuleTarget)[keyof typeof RuleTarget];
 
-export const HeaderTarget = {
+export const HeaderHideTarget = {
   Both: "both",
   Request: "request",
   Response: "response",
 } as const;
-export type HeaderTarget = (typeof HeaderTarget)[keyof typeof HeaderTarget];
+export type HeaderHideTarget =
+  (typeof HeaderHideTarget)[keyof typeof HeaderHideTarget];
 
 export const Disposition = {
   Horizontal: "horizontal",
@@ -63,7 +63,6 @@ export type WidthMode = (typeof WidthMode)[keyof typeof WidthMode];
 // --- Inferred Types ---
 
 export type HiddenHeaders = z.infer<typeof HiddenHeadersSchema>;
-export type ShownHeaders = z.infer<typeof ShownHeadersSchema>;
 export type WidthSetting = z.infer<typeof WidthSettingSchema>;
 export type HighlightRule = z.infer<typeof HighlightRuleSchema>;
 export type RedactionRule = z.infer<typeof RedactionRuleSchema>;
@@ -118,11 +117,6 @@ const DEFAULT_HEADERS_TO_HIDE = [
 export const DEFAULT_SETTINGS: ScreenshotSettings = {
   headersToHide: {
     both: DEFAULT_HEADERS_TO_HIDE,
-    request: [],
-    response: [],
-  },
-  headersToShow: {
-    both: [],
     request: [],
     response: [],
   },

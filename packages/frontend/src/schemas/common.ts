@@ -13,12 +13,6 @@ export const HiddenHeadersSchema = z.object({
   response: z.array(z.string()),
 });
 
-export const ShownHeadersSchema = z.object({
-  both: z.array(z.string()),
-  request: z.array(z.string()),
-  response: z.array(z.string()),
-});
-
 export const WidthSettingSchema = z.discriminatedUnion("mode", [
   z.object({ mode: z.literal(WidthMode.Full) }),
   z.object({ mode: z.literal(WidthMode.Pixel), value: z.number() }),

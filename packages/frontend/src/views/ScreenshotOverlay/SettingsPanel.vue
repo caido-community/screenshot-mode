@@ -17,8 +17,8 @@ import { useTemplatesStore } from "@/stores/templates";
 import {
   Disposition,
   type Disposition as DispositionType,
-  HeaderTarget,
-  type HeaderTarget as HeaderTargetType,
+  HeaderHideTarget,
+  type HeaderHideTarget as HeaderHideTargetType,
   HighlightMode,
   type HighlightRule,
   MatchMode,
@@ -74,16 +74,15 @@ const widthOptions = [
 ];
 
 const headerTargetOptions = [
-  { label: "Both", value: HeaderTarget.Both },
-  { label: "Request", value: HeaderTarget.Request },
-  { label: "Response", value: HeaderTarget.Response },
+  { label: "Both", value: HeaderHideTarget.Both },
+  { label: "Request", value: HeaderHideTarget.Request },
+  { label: "Response", value: HeaderHideTarget.Response },
 ];
 
-const headerHideTarget = ref<HeaderTargetType>(HeaderTarget.Both);
-const headerShowTarget = ref<HeaderTargetType>(HeaderTarget.Both);
+const headerTarget = ref<HeaderHideTargetType>(HeaderHideTarget.Both);
 
-const headersHideText = computed({
-  get: () => settings.headersToHide[headerHideTarget.value].join("\n"),
+const headersText = computed({
+  get: () => settings.headersToHide[headerTarget.value].join("\n"),
   set: (value: string) => {
     const headers = value
       .split("\n")
@@ -93,24 +92,7 @@ const headersHideText = computed({
       ...settings,
       headersToHide: {
         ...settings.headersToHide,
-        [headerHideTarget.value]: headers,
-      },
-    });
-  },
-});
-
-const headersShowText = computed({
-  get: () => settings.headersToShow[headerShowTarget.value].join("\n"),
-  set: (value: string) => {
-    const headers = value
-      .split("\n")
-      .map((h) => h.trim())
-      .filter((h) => h.length > 0);
-    emit("update", {
-      ...settings,
-      headersToShow: {
-        ...settings.headersToShow,
-        [headerShowTarget.value]: headers,
+        [headerTarget.value]: headers,
       },
     });
   },
@@ -284,43 +266,21 @@ function createTemplate() {
         <label class="block text-sm font-medium text-surface-200">
           Headers to Hide
         </label>
-        <p class="text-xs text-surface-400">One header per line</p>
-      </div>
-      <SelectButton
-        v-model="headerHideTarget"
-        :options="headerTargetOptions"
-        option-label="label"
-        option-value="value"
-        class="mb-2 w-full"
-      />
-      <Textarea
-        v-model="headersHideText"
-        rows="4"
-        placeholder="Enter headers to hide"
-        class="w-full font-mono text-sm"
-      />
-    </div>
-
-    <div>
-      <div class="mb-2">
-        <label class="block text-sm font-medium text-surface-200">
-          Headers to Show
-        </label>
         <p class="text-xs text-surface-400">
-          Always show these headers, even if hidden
+          One header per line. Prefix with ! to always show
         </p>
       </div>
       <SelectButton
-        v-model="headerShowTarget"
+        v-model="headerTarget"
         :options="headerTargetOptions"
         option-label="label"
         option-value="value"
         class="mb-2 w-full"
       />
       <Textarea
-        v-model="headersShowText"
+        v-model="headersText"
         rows="4"
-        placeholder="Enter headers to always show"
+        placeholder="Enter headers to hide"
         class="w-full font-mono text-sm"
       />
     </div>

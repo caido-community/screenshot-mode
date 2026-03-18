@@ -4,20 +4,20 @@ import Textarea from "primevue/textarea";
 import { computed, ref } from "vue";
 
 import {
-  HeaderTarget,
-  type HeaderTarget as HeaderTargetType,
+  HeaderHideTarget,
+  type HeaderHideTarget as HeaderHideTargetType,
   type HiddenHeaders,
 } from "@/types";
 
 const model = defineModel<HiddenHeaders>({ required: true });
 
 const headerTargetOptions = [
-  { label: "Both", value: HeaderTarget.Both },
-  { label: "Request", value: HeaderTarget.Request },
-  { label: "Response", value: HeaderTarget.Response },
+  { label: "Both", value: HeaderHideTarget.Both },
+  { label: "Request", value: HeaderHideTarget.Request },
+  { label: "Response", value: HeaderHideTarget.Response },
 ];
 
-const headerTarget = ref<HeaderTargetType>(HeaderTarget.Both);
+const headerTarget = ref<HeaderHideTargetType>(HeaderHideTarget.Both);
 
 const headersText = computed({
   get: () => model.value[headerTarget.value].join("\n"),
@@ -44,7 +44,7 @@ const headersText = computed({
       >
     </div>
     <p class="mb-2 text-xs text-surface-400">
-      Choose which side to hide headers from
+      One header per line. Prefix with ! to always show
     </p>
     <SelectButton
       v-model="headerTarget"

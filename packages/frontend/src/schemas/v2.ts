@@ -3,18 +3,12 @@ import { z } from "zod";
 import {
   DispositionSchema,
   HiddenHeadersSchema,
-  ShownHeadersSchema,
   WidthSettingSchema,
 } from "./common";
 import { HighlightRuleSchema, RedactionRuleSchema } from "./rules";
 
 export const V2SettingsSchema = z.object({
   headersToHide: HiddenHeadersSchema,
-  headersToShow: ShownHeadersSchema.default({
-    both: [],
-    request: [],
-    response: [],
-  }),
   disposition: DispositionSchema,
   width: WidthSettingSchema,
   highlights: z.array(HighlightRuleSchema),

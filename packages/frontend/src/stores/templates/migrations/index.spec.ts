@@ -50,35 +50,6 @@ describe("migrateStorage", () => {
       );
     });
 
-    it("applies default headersToShow when missing from v2 data", () => {
-      const stored = {
-        version: 2,
-        templates: [
-          {
-            id: "t1",
-            name: "Default",
-            settings: {
-              headersToHide: { both: ["Accept"], request: [], response: [] },
-              disposition: Disposition.Horizontal,
-              width: { mode: WidthMode.Full },
-              highlights: [],
-              redactions: [],
-            },
-          },
-        ],
-        defaultTemplateId: "t1",
-      };
-
-      const { data, migrated } = migrateStorage(stored);
-
-      expect(migrated).toBe(false);
-      expect(data.templates[0]!.settings.headersToShow).toEqual({
-        both: [],
-        request: [],
-        response: [],
-      });
-    });
-
     it("returns v2 data without matchMode as-is (defaults applied by schema)", () => {
       const stored = {
         version: 2,
@@ -157,11 +128,6 @@ describe("migrateStorage", () => {
         request: [],
         response: [],
       });
-      expect(data.templates[0]!.settings.headersToShow).toEqual({
-        both: [],
-        request: [],
-        response: [],
-      });
     });
 
     it("preserves already-split headers in v1 data", () => {
@@ -196,11 +162,6 @@ describe("migrateStorage", () => {
         request: ["Host"],
         response: [],
       });
-      expect(data.templates[0]!.settings.headersToShow).toEqual({
-        both: [],
-        request: [],
-        response: [],
-      });
     });
   });
 
@@ -225,11 +186,7 @@ describe("migrateStorage", () => {
         request: [],
         response: [],
       });
-      expect(data.templates[0]!.settings.headersToShow).toEqual({
-        both: [],
-        request: [],
-        response: [],
-      });
+
       expect(data.defaultTemplateId).toBe(data.templates[0]!.id);
     });
   });

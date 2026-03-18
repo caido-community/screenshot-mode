@@ -1,8 +1,4 @@
-export {
-  HiddenHeadersSchema,
-  ShownHeadersSchema,
-  WidthSettingSchema,
-} from "./common";
+export { HiddenHeadersSchema, WidthSettingSchema } from "./common";
 export { HighlightRuleSchema, RedactionRuleSchema } from "./rules";
 export { V0SettingsSchema } from "./v0";
 export { V1StoredDataSchema } from "./v1";
