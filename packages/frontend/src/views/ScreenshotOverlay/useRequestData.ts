@@ -15,6 +15,13 @@ export function useRequestData() {
     url: "",
     sni: undefined,
   });
+  const responseInfo = ref<
+    | {
+        length: number;
+        roundtripTime: number;
+      }
+    | undefined
+  >(undefined);
 
   async function fetchRequestData(requestId: string): Promise<void> {
     const requestData = await sdk.graphql.request({ id: requestId });
@@ -36,8 +43,15 @@ export function useRequestData() {
         id: request.response.id,
       });
       responseRaw.value = responseData.response?.raw ?? "";
+      responseInfo.value = isPresent(responseData.response)
+        ? {
+            length: responseData.response.length,
+            roundtripTime: responseData.response.roundtripTime,
+          }
+        : undefined;
     } else {
       responseRaw.value = "";
+      responseInfo.value = undefined;
     }
   }
 
@@ -58,6 +72,7 @@ export function useRequestData() {
     requestRaw,
     responseRaw,
     urlInfo,
+    responseInfo,
     loadFromSession,
     loadFromRequest,
   };
