@@ -119,6 +119,7 @@ function handleMatchModeChange(value: MatchModeType): void {
         :options="matchModeOptions"
         option-label="label"
         option-value="value"
+        :allow-empty="false"
         @update:model-value="handleMatchModeChange"
       />
     </div>
