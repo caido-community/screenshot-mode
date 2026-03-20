@@ -27,6 +27,7 @@ const {
   sni,
   splitterSizes,
   cropMaxHeight = undefined,
+  responseInfo = undefined,
 } = defineProps<{
   settings: ScreenshotSettings;
   requestRaw: string;
@@ -35,6 +36,7 @@ const {
   sni: string | undefined;
   splitterSizes: [number, number];
   cropMaxHeight?: number;
+  responseInfo?: { length: number; roundtripTime: number };
 }>();
 
 const emit = defineEmits<{
@@ -92,6 +94,7 @@ defineExpose({
         :settings="settings"
         :splitter-sizes="splitterSizes"
         :is-cropped="isPresent(cropMaxHeight)"
+        :response-info="responseInfo"
         @add-highlight="(regex, target) => emit('addHighlight', regex, target)"
         @add-redaction="(regex, target) => emit('addRedaction', regex, target)"
         @add-hidden-header="(headerName) => emit('addHiddenHeader', headerName)"

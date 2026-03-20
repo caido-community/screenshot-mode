@@ -33,8 +33,14 @@ const DEFAULT_HIGHLIGHT_COLOR = "#ffff00";
 const DEFAULT_REDACTION_TEXT = "[REDACTED]";
 
 const sdk = useSDK();
-const { requestRaw, responseRaw, urlInfo, loadFromSession, loadFromRequest } =
-  useRequestData();
+const {
+  requestRaw,
+  responseRaw,
+  urlInfo,
+  responseInfo,
+  loadFromSession,
+  loadFromRequest,
+} = useRequestData();
 const {
   getTabSettings,
   setTabSettingsFromTemplate,
@@ -303,6 +309,7 @@ onUnmounted(() => {
                 :sni="urlInfo.sni"
                 :splitter-sizes="splitterSizes"
                 :crop-max-height="cropMaxHeight"
+                :response-info="responseInfo"
                 @add-highlight="handleAddHighlight"
                 @add-redaction="handleAddRedaction"
                 @add-hidden-header="handleAddHiddenHeader"

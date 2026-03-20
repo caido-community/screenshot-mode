@@ -16,12 +16,14 @@ const {
   settings,
   splitterSizes,
   isCropped = false,
+  responseInfo = undefined,
 } = defineProps<{
   requestRaw: string;
   responseRaw: string;
   settings: ScreenshotSettings;
   splitterSizes: [number, number];
   isCropped?: boolean;
+  responseInfo?: { length: number; roundtripTime: number };
 }>();
 
 const emit = defineEmits<{
@@ -274,6 +276,14 @@ defineExpose({
       <div ref="responseEditorContainer" class="h-full w-full" />
     </SplitterPanel>
   </Splitter>
+
+  <div
+    v-if="isPresent(responseInfo)"
+    class="flex shrink-0 items-center justify-end border-t border-surface-600 px-3 py-1 text-xs text-surface-400"
+  >
+    {{ responseInfo.length.toLocaleString() }} bytes |
+    {{ responseInfo.roundtripTime }}ms
+  </div>
 
   <SelectionContextMenu
     :x="contextMenuPosition.x"
