@@ -26,6 +26,7 @@ const dispositionOptions = [
       :options="dispositionOptions"
       option-label="label"
       option-value="value"
+      :allow-empty="false"
     />
   </div>
 </template>
