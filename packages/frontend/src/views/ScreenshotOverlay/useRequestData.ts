@@ -3,6 +3,7 @@ import { ref } from "vue";
 import { useEntry } from "./useEntry";
 
 import { useSDK } from "@/plugins/sdk";
+import { type ResponseMeta } from "@/types";
 import { isPresent } from "@/utils/optional";
 
 export function useRequestData() {
@@ -15,43 +16,44 @@ export function useRequestData() {
     url: "",
     sni: undefined,
   });
-  const responseInfo = ref<
-    | {
-        length: number;
-        roundtripTime: number;
-      }
-    | undefined
-  >(undefined);
+  const responseInfo = ref<ResponseMeta | undefined>(undefined);
 
   async function fetchRequestData(requestId: string): Promise<void> {
-    const requestData = await sdk.graphql.request({ id: requestId });
-    const request = requestData.request;
-    if (!isPresent(request)) {
-      return;
-    }
+    try {
+      const requestData = await sdk.graphql.request({ id: requestId });
+      const request = requestData.request;
+      if (!isPresent(request)) {
+        return;
+      }
 
-    requestRaw.value = request.raw ?? "";
-    urlInfo.value = {
-      url: `${request.isTls ? "https" : "http"}://${request.host}:${
-        request.port
-      }${request.path}${request.query ?? ""}`,
-      sni: request.sni ?? undefined,
-    };
+      requestRaw.value = request.raw ?? "";
+      urlInfo.value = {
+        url: `${request.isTls ? "https" : "http"}://${request.host}:${
+          request.port
+        }${request.path}${request.query ?? ""}`,
+        sni: request.sni ?? undefined,
+      };
 
-    if (isPresent(request.response)) {
-      const responseData = await sdk.graphql.response({
-        id: request.response.id,
+      if (isPresent(request.response)) {
+        const responseData = await sdk.graphql.response({
+          id: request.response.id,
+        });
+        responseRaw.value = responseData.response?.raw ?? "";
+        responseInfo.value = isPresent(responseData.response)
+          ? {
+              length: responseData.response.length,
+              roundtripTime: responseData.response.roundtripTime,
+            }
+          : undefined;
+      } else {
+        responseRaw.value = "";
+        responseInfo.value = undefined;
+      }
+    } catch (error) {
+      const message = error instanceof Error ? error.message : "Unknown error";
+      sdk.window.showToast(`Failed to load request data: ${message}`, {
+        variant: "error",
       });
-      responseRaw.value = responseData.response?.raw ?? "";
-      responseInfo.value = isPresent(responseData.response)
-        ? {
-            length: responseData.response.length,
-            roundtripTime: responseData.response.roundtripTime,
-          }
-        : undefined;
-    } else {
-      responseRaw.value = "";
-      responseInfo.value = undefined;
     }
   }
 

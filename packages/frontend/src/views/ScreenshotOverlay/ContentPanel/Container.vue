@@ -4,7 +4,12 @@ import { computed, ref } from "vue";
 import DataDisplay from "./DataDisplay.vue";
 import UrlHeader from "./UrlHeader.vue";
 
-import { type RuleTarget, type ScreenshotSettings, WidthMode } from "@/types";
+import {
+  type ResponseMeta,
+  type RuleTarget,
+  type ScreenshotSettings,
+  WidthMode,
+} from "@/types";
 import { isPresent } from "@/utils/optional";
 
 interface DataDisplayExposed {
@@ -36,7 +41,7 @@ const {
   sni: string | undefined;
   splitterSizes: [number, number];
   cropMaxHeight?: number;
-  responseInfo?: { length: number; roundtripTime: number };
+  responseInfo?: ResponseMeta;
 }>();
 
 const emit = defineEmits<{

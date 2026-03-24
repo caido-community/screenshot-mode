@@ -60,6 +60,13 @@ export const WidthMode = {
 } as const;
 export type WidthMode = (typeof WidthMode)[keyof typeof WidthMode];
 
+// --- Types ---
+
+export interface ResponseMeta {
+  length: number;
+  roundtripTime: number;
+}
+
 // --- Inferred Types ---
 
 export type HiddenHeaders = z.infer<typeof HiddenHeadersSchema>;

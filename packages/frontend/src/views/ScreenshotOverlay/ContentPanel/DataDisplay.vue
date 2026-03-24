@@ -5,7 +5,12 @@ import { computed, nextTick, onMounted, onUnmounted, ref, watch } from "vue";
 
 import { SelectionContextMenu } from "@/components/SelectionContextMenu";
 import { useSDK } from "@/plugins/sdk";
-import { Disposition, RuleTarget, type ScreenshotSettings } from "@/types";
+import {
+  Disposition,
+  type ResponseMeta,
+  RuleTarget,
+  type ScreenshotSettings,
+} from "@/types";
 import { applyDecorations } from "@/utils/decorations";
 import { filterHeaders } from "@/utils/headers";
 import { isPresent } from "@/utils/optional";
@@ -23,7 +28,7 @@ const {
   settings: ScreenshotSettings;
   splitterSizes: [number, number];
   isCropped?: boolean;
-  responseInfo?: { length: number; roundtripTime: number };
+  responseInfo?: ResponseMeta;
 }>();
 
 const emit = defineEmits<{
