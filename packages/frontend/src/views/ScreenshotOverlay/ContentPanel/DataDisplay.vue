@@ -5,7 +5,12 @@ import { computed, nextTick, onMounted, onUnmounted, ref, watch } from "vue";
 
 import { SelectionContextMenu } from "@/components/SelectionContextMenu";
 import { useSDK } from "@/plugins/sdk";
-import { Disposition, RuleTarget, type ScreenshotSettings } from "@/types";
+import {
+  Disposition,
+  type ResponseMeta,
+  RuleTarget,
+  type ScreenshotSettings,
+} from "@/types";
 import { applyDecorations } from "@/utils/decorations";
 import { filterHeaders } from "@/utils/headers";
 import { isPresent } from "@/utils/optional";
@@ -16,12 +21,14 @@ const {
   settings,
   splitterSizes,
   isCropped = false,
+  responseInfo = undefined,
 } = defineProps<{
   requestRaw: string;
   responseRaw: string;
   settings: ScreenshotSettings;
   splitterSizes: [number, number];
   isCropped?: boolean;
+  responseInfo?: ResponseMeta;
 }>();
 
 const emit = defineEmits<{
@@ -274,6 +281,14 @@ defineExpose({
       <div ref="responseEditorContainer" class="h-full w-full" />
     </SplitterPanel>
   </Splitter>
+
+  <div
+    v-if="isPresent(responseInfo)"
+    class="flex shrink-0 items-center justify-end border-t border-surface-600 px-3 py-1 text-xs text-surface-400"
+  >
+    {{ responseInfo.length.toLocaleString() }} bytes |
+    {{ responseInfo.roundtripTime }}ms
+  </div>
 
   <SelectionContextMenu
     :x="contextMenuPosition.x"
