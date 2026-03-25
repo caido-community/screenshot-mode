@@ -60,6 +60,13 @@ export const WidthMode = {
 } as const;
 export type WidthMode = (typeof WidthMode)[keyof typeof WidthMode];
 
+// --- Types ---
+
+export interface ResponseMeta {
+  length: number;
+  roundtripTime: number;
+}
+
 // --- Inferred Types ---
 
 export type HiddenHeaders = z.infer<typeof HiddenHeadersSchema>;
@@ -76,6 +83,9 @@ const DEFAULT_HEADERS_TO_HIDE = [
   "Accept",
   "Accept-Encoding",
   "Accept-Language",
+  "Accept-Ranges",
+  "Age",
+  "Alt-Svc",
   "Cache-Control",
   "CF-Cache-Status",
   "CF-RAY",
@@ -83,21 +93,31 @@ const DEFAULT_HEADERS_TO_HIDE = [
   "Content-Length",
   "Date",
   "ETag",
+  "Expect-CT",
   "Expires",
+  "Keep-Alive",
   "Last-Modified",
   "NEL",
+  "Permissions-Policy",
   "Pragma",
   "Priority",
   "Report-To",
   "Sec-CH-UA",
+  "Sec-CH-UA-Arch",
+  "Sec-CH-UA-Bitness",
+  "Sec-CH-UA-Full-Version",
+  "Sec-CH-UA-Full-Version-List",
   "Sec-CH-UA-Mobile",
+  "Sec-CH-UA-Model",
   "Sec-CH-UA-Platform",
+  "Sec-CH-UA-Platform-Version",
   "Sec-Fetch-Dest",
   "Sec-Fetch-Mode",
   "Sec-Fetch-Site",
   "Sec-Fetch-User",
   "Server-Timing",
   "Strict-Transport-Security",
+  "Transfer-Encoding",
   "Upgrade-Insecure-Requests",
   "Vary",
   "Via",
@@ -108,6 +128,7 @@ const DEFAULT_HEADERS_TO_HIDE = [
   "X-Cache",
   "X-Content-Type-Options",
   "X-Frame-Options",
+  "X-Powered-By",
   "X-Request-Id",
   "X-Served-By",
   "X-Timer",

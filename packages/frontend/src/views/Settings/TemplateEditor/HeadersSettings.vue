@@ -51,6 +51,7 @@ const headersText = computed({
       :options="headerTargetOptions"
       option-label="label"
       option-value="value"
+      :allow-empty="false"
       class="mb-2 w-full"
     />
     <Textarea

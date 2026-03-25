@@ -275,6 +275,7 @@ function createTemplate() {
         :options="headerTargetOptions"
         option-label="label"
         option-value="value"
+        :allow-empty="false"
         class="mb-2 w-full"
       />
       <Textarea
@@ -294,6 +295,7 @@ function createTemplate() {
         :options="dispositionOptions"
         option-label="label"
         option-value="value"
+        :allow-empty="false"
         class="w-full"
       />
     </div>
