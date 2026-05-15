@@ -287,7 +287,7 @@ function handleMatchModeChange(value: MatchModeType): void {
             ? 'Literal string'
             : 'Regex pattern'
         "
-        class="flex-1 font-mono text-sm"
+        class="min-w-0 flex-1 font-mono text-sm"
         @update:model-value="handleRegexChange"
       />
       <Button
@@ -298,14 +298,14 @@ function handleMatchModeChange(value: MatchModeType): void {
         @click="emit('delete')"
       />
     </div>
-    <div class="flex items-center gap-2">
+    <div class="flex flex-wrap items-center gap-2">
       <Select
         :model-value="rule.target"
         :options="targetOptions"
         option-label="label"
         option-value="value"
         placeholder="Target"
-        class="w-30"
+        class="w-28"
         :append-to="appendTo"
         @update:model-value="handleTargetChange"
       />
@@ -334,7 +334,7 @@ function handleMatchModeChange(value: MatchModeType): void {
         @update:model-value="handleReplacementTextChange"
       />
     </div>
-    <div class="flex items-center gap-2">
+    <div class="flex flex-wrap items-center gap-2">
       <Checkbox
         :model-value="rule.useCaptureGroups"
         :disabled="!hasCaptureGroups"
@@ -347,7 +347,7 @@ function handleMatchModeChange(value: MatchModeType): void {
         option-label="label"
         option-value="value"
         :placeholder="hasCaptureGroups ? 'Select groups' : 'No capture groups'"
-        class="flex-1"
+        class="min-w-24 flex-1 h-10"
         :disabled="!rule.useCaptureGroups || !hasCaptureGroups"
         :append-to="appendTo"
         filter

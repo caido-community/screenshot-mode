@@ -1,4 +1,6 @@
 <script setup lang="ts">
+import { StateEffect } from "@codemirror/state";
+import { EditorView } from "@codemirror/view";
 import Splitter from "primevue/splitter";
 import SplitterPanel from "primevue/splitterpanel";
 import { computed, nextTick, onMounted, onUnmounted, ref, watch } from "vue";
@@ -231,6 +233,15 @@ onMounted(() => {
     .addEventListener("contextmenu", handleResponseContextMenu);
 
   mountEditors();
+
+  for (const view of [
+    requestEditor.getEditorView(),
+    responseEditor.getEditorView(),
+  ]) {
+    view.dispatch({
+      effects: StateEffect.appendConfig.of(EditorView.lineWrapping),
+    });
+  }
 });
 
 onUnmounted(() => {
@@ -269,14 +280,14 @@ defineExpose({
     <SplitterPanel
       :size="splitterSizes[0]"
       :min-size="10"
-      class="overflow-hidden"
+      class="overflow-hidden p-0"
     >
       <div ref="requestEditorContainer" class="h-full w-full" />
     </SplitterPanel>
     <SplitterPanel
       :size="splitterSizes[1]"
       :min-size="10"
-      class="overflow-hidden"
+      class="overflow-hidden p-0"
     >
       <div ref="responseEditorContainer" class="h-full w-full" />
     </SplitterPanel>

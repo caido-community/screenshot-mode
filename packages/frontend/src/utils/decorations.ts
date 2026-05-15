@@ -65,7 +65,8 @@ function createRedactionDecoration(input: RedactionInput): Decoration {
     return Decoration.mark({
       class: "screenshot-redaction-blur",
       attributes: {
-        style: "filter: blur(4px); user-select: none;",
+        style:
+          "filter: blur(4px); user-select: none; clip-path: inset(0);",
       },
     });
   }
@@ -97,7 +98,7 @@ class RedactedWidget extends WidgetType {
     span.textContent = this.text;
     span.className = "screenshot-redaction-replace";
     span.style.cssText =
-      "background-color: #000; color: #fff; padding: 0 4px; font-family: monospace;";
+      "background-color: #000; color: #fff; padding: 0 4px; font-family: monospace; line-height: inherit;";
     return span;
   }
 }
