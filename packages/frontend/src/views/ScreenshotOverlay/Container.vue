@@ -56,6 +56,7 @@ const overlayState = getOverlayState();
 
 const settings = ref<ScreenshotSettings | undefined>(undefined);
 const selectedTemplateId = ref<string>("");
+const showTimestamp = ref(false);
 
 const contentPanelComponentRef = ref<ContentPanelExposed | undefined>(
   undefined,
@@ -142,6 +143,10 @@ function handleBackdropClick(event: MouseEvent): void {
   if (event.target === event.currentTarget) {
     closeOverlay();
   }
+}
+
+function formatTimestamp(): string {
+  return new Date().toLocaleString();
 }
 
 async function handleScreenshot(action: "disk" | "clipboard"): Promise<void> {
@@ -289,11 +294,13 @@ onUnmounted(() => {
               v-if="isPresent(settings)"
               :settings="settings"
               :selected-template-id="selectedTemplateId"
+              :show-timestamp="showTimestamp"
               @update="handleSettingsChange"
               @template-change="handleTemplateChange"
               @reset-to-template="handleResetToTemplate"
               @save-as-new-template="handleSaveAsNewTemplate"
               @update-current-template="handleUpdateCurrentTemplate"
+              @update:show-timestamp="showTimestamp = $event"
             />
           </div>
 
@@ -310,6 +317,7 @@ onUnmounted(() => {
                 :splitter-sizes="splitterSizes"
                 :crop-max-height="cropMaxHeight"
                 :response-info="responseInfo"
+                :timestamp="showTimestamp ? formatTimestamp() : undefined"
                 @add-highlight="handleAddHighlight"
                 @add-redaction="handleAddRedaction"
                 @add-hidden-header="handleAddHiddenHeader"

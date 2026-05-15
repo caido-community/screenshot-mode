@@ -9,6 +9,7 @@ import Popover from "primevue/popover";
 import Select from "primevue/select";
 import SelectButton from "primevue/selectbutton";
 import Textarea from "primevue/textarea";
+import ToggleSwitch from "primevue/toggleswitch";
 import { computed, ref } from "vue";
 
 import { HighlightRulesList } from "@/components/HighlightRulesList";
@@ -31,9 +32,10 @@ import {
   type WidthSetting,
 } from "@/types";
 
-const { settings, selectedTemplateId } = defineProps<{
+const { settings, selectedTemplateId, showTimestamp } = defineProps<{
   settings: ScreenshotSettings;
   selectedTemplateId: string;
+  showTimestamp: boolean;
 }>();
 
 const emit = defineEmits<{
@@ -42,6 +44,7 @@ const emit = defineEmits<{
   resetToTemplate: [];
   saveAsNewTemplate: [name: string];
   updateCurrentTemplate: [];
+  "update:showTimestamp": [value: boolean];
 }>();
 
 const op = ref<InstanceType<typeof Popover> | undefined>(undefined);
@@ -320,6 +323,13 @@ function createTemplate() {
           :max="2000"
           suffix="px"
           class="w-32"
+        />
+      </div>
+      <div class="mt-3 flex items-center justify-between">
+        <label class="text-sm text-surface-200">Show Timestamp</label>
+        <ToggleSwitch
+          :model-value="showTimestamp"
+          @update:model-value="emit('update:showTimestamp', $event)"
         />
       </div>
     </div>

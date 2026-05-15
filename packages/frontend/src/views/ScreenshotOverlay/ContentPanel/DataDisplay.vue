@@ -24,6 +24,7 @@ const {
   splitterSizes,
   isCropped = false,
   responseInfo = undefined,
+  timestamp = undefined,
 } = defineProps<{
   requestRaw: string;
   responseRaw: string;
@@ -31,6 +32,7 @@ const {
   splitterSizes: [number, number];
   isCropped?: boolean;
   responseInfo?: ResponseMeta;
+  timestamp?: string;
 }>();
 
 const emit = defineEmits<{
@@ -294,11 +296,15 @@ defineExpose({
   </Splitter>
 
   <div
-    v-if="isPresent(responseInfo)"
-    class="flex shrink-0 items-center justify-end border-t border-surface-600 px-3 py-1 text-xs text-surface-400"
+    v-if="isPresent(responseInfo) || isPresent(timestamp)"
+    class="flex shrink-0 items-center justify-between border-t border-surface-600 px-3 py-1 text-xs text-surface-400"
   >
-    {{ responseInfo.length.toLocaleString() }} bytes |
-    {{ responseInfo.roundtripTime }}ms
+    <span v-if="isPresent(timestamp)">{{ timestamp }}</span>
+    <span v-else />
+    <span v-if="isPresent(responseInfo)">
+      {{ responseInfo.length.toLocaleString() }} bytes |
+      {{ responseInfo.roundtripTime }}ms
+    </span>
   </div>
 
   <SelectionContextMenu
