@@ -65,8 +65,7 @@ function createRedactionDecoration(input: RedactionInput): Decoration {
     return Decoration.mark({
       class: "screenshot-redaction-blur",
       attributes: {
-        style:
-          "filter: blur(4px); user-select: none; clip-path: inset(0);",
+        style: "filter: blur(4px); user-select: none; clip-path: inset(0);",
       },
     });
   }

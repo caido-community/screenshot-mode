@@ -9,6 +9,7 @@ import Popover from "primevue/popover";
 import Select from "primevue/select";
 import SelectButton from "primevue/selectbutton";
 import Textarea from "primevue/textarea";
+import ToggleSwitch from "primevue/toggleswitch";
 import { computed, ref } from "vue";
 
 import { HighlightRulesList } from "@/components/HighlightRulesList";
@@ -320,6 +321,30 @@ function createTemplate() {
           :max="2000"
           suffix="px"
           class="w-32"
+        />
+      </div>
+    </div>
+
+    <div>
+      <label class="mb-2 block text-sm font-medium text-surface-200">
+        Metadata
+      </label>
+      <div class="flex items-center justify-between">
+        <label class="text-sm text-surface-200">Show Timestamp</label>
+        <ToggleSwitch
+          :model-value="settings.showTimestamp"
+          @update:model-value="
+            emit('update', { ...settings, showTimestamp: $event })
+          "
+        />
+      </div>
+      <div class="mt-2 flex items-center justify-between">
+        <label class="text-sm text-surface-200">Show Response Info</label>
+        <ToggleSwitch
+          :model-value="settings.showResponseInfo"
+          @update:model-value="
+            emit('update', { ...settings, showResponseInfo: $event })
+          "
         />
       </div>
     </div>
