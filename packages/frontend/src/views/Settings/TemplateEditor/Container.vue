@@ -71,6 +71,13 @@ const showTimestamp = computed({
   },
 });
 
+const showResponseInfo = computed({
+  get: () => settings.value.showResponseInfo,
+  set: (value: boolean) => {
+    settings.value = { ...settings.value, showResponseInfo: value };
+  },
+});
+
 const highlights = computed({
   get: () => settings.value.highlights,
   set: (value: HighlightRule[]) => {
@@ -162,7 +169,10 @@ async function handleSave(): Promise<void> {
           <HeadersSettings v-model="headersToHide" />
           <LayoutSettings v-model="disposition" />
           <WidthSettings v-model="width" />
-          <DisplaySettings v-model="showTimestamp" />
+          <DisplaySettings
+            v-model="showTimestamp"
+            v-model:show-response-info="showResponseInfo"
+          />
         </div>
 
         <div class="flex flex-col gap-4">

@@ -146,4 +146,5 @@ export const DEFAULT_SETTINGS: ScreenshotSettings = {
   highlights: [],
   redactions: [],
   showTimestamp: false,
+  showResponseInfo: true,
 };

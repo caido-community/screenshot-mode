@@ -2,6 +2,9 @@
 import ToggleSwitch from "primevue/toggleswitch";
 
 const showTimestamp = defineModel<boolean>({ required: true });
+const showResponseInfo = defineModel<boolean>("showResponseInfo", {
+  required: true,
+});
 </script>
 
 <template>
@@ -17,6 +20,10 @@ const showTimestamp = defineModel<boolean>({ required: true });
     <div class="flex items-center justify-between">
       <label class="text-sm text-surface-200">Show Timestamp</label>
       <ToggleSwitch v-model="showTimestamp" />
+    </div>
+    <div class="mt-2 flex items-center justify-between">
+      <label class="text-sm text-surface-200">Show Response Info</label>
+      <ToggleSwitch v-model="showResponseInfo" />
     </div>
   </div>
 </template>

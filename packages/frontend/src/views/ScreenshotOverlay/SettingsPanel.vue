@@ -338,6 +338,15 @@ function createTemplate() {
           "
         />
       </div>
+      <div class="mt-2 flex items-center justify-between">
+        <label class="text-sm text-surface-200">Show Response Info</label>
+        <ToggleSwitch
+          :model-value="settings.showResponseInfo"
+          @update:model-value="
+            emit('update', { ...settings, showResponseInfo: $event })
+          "
+        />
+      </div>
     </div>
 
     <div>

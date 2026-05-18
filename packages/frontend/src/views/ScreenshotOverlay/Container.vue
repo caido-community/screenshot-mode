@@ -313,7 +313,9 @@ onUnmounted(() => {
                 :sni="urlInfo.sni"
                 :splitter-sizes="splitterSizes"
                 :crop-max-height="cropMaxHeight"
-                :response-info="responseInfo"
+                :response-info="
+                  settings.showResponseInfo ? responseInfo : undefined
+                "
                 :timestamp="
                   settings.showTimestamp ? formatTimestamp() : undefined
                 "
