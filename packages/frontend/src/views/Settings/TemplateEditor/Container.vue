@@ -3,6 +3,7 @@ import Button from "primevue/button";
 import InputText from "primevue/inputtext";
 import { computed, ref, watch } from "vue";
 
+import DisplaySettings from "./DisplaySettings.vue";
 import HeadersSettings from "./HeadersSettings.vue";
 import HighlightsSettings from "./HighlightsSettings.vue";
 import LayoutSettings from "./LayoutSettings.vue";
@@ -60,6 +61,20 @@ const width = computed({
   get: () => settings.value.width,
   set: (value: WidthSetting) => {
     settings.value = { ...settings.value, width: value };
+  },
+});
+
+const showTimestamp = computed({
+  get: () => settings.value.showTimestamp,
+  set: (value: boolean) => {
+    settings.value = { ...settings.value, showTimestamp: value };
+  },
+});
+
+const showResponseInfo = computed({
+  get: () => settings.value.showResponseInfo,
+  set: (value: boolean) => {
+    settings.value = { ...settings.value, showResponseInfo: value };
   },
 });
 
@@ -154,6 +169,10 @@ async function handleSave(): Promise<void> {
           <HeadersSettings v-model="headersToHide" />
           <LayoutSettings v-model="disposition" />
           <WidthSettings v-model="width" />
+          <DisplaySettings
+            v-model="showTimestamp"
+            v-model:show-response-info="showResponseInfo"
+          />
         </div>
 
         <div class="flex flex-col gap-4">

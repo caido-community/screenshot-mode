@@ -1,4 +1,6 @@
 <script setup lang="ts">
+import { StateEffect } from "@codemirror/state";
+import { EditorView } from "@codemirror/view";
 import Splitter from "primevue/splitter";
 import SplitterPanel from "primevue/splitterpanel";
 import { computed, nextTick, onMounted, onUnmounted, ref, watch } from "vue";
@@ -22,6 +24,7 @@ const {
   splitterSizes,
   isCropped = false,
   responseInfo = undefined,
+  timestamp = undefined,
 } = defineProps<{
   requestRaw: string;
   responseRaw: string;
@@ -29,6 +32,7 @@ const {
   splitterSizes: [number, number];
   isCropped?: boolean;
   responseInfo?: ResponseMeta;
+  timestamp?: string;
 }>();
 
 const emit = defineEmits<{
@@ -231,6 +235,15 @@ onMounted(() => {
     .addEventListener("contextmenu", handleResponseContextMenu);
 
   mountEditors();
+
+  for (const view of [
+    requestEditor.getEditorView(),
+    responseEditor.getEditorView(),
+  ]) {
+    view.dispatch({
+      effects: StateEffect.appendConfig.of(EditorView.lineWrapping),
+    });
+  }
 });
 
 onUnmounted(() => {
@@ -269,25 +282,29 @@ defineExpose({
     <SplitterPanel
       :size="splitterSizes[0]"
       :min-size="10"
-      class="overflow-hidden"
+      class="overflow-hidden p-0"
     >
       <div ref="requestEditorContainer" class="h-full w-full" />
     </SplitterPanel>
     <SplitterPanel
       :size="splitterSizes[1]"
       :min-size="10"
-      class="overflow-hidden"
+      class="overflow-hidden p-0"
     >
       <div ref="responseEditorContainer" class="h-full w-full" />
     </SplitterPanel>
   </Splitter>
 
   <div
-    v-if="isPresent(responseInfo)"
-    class="flex shrink-0 items-center justify-end border-t border-surface-600 px-3 py-1 text-xs text-surface-400"
+    v-if="isPresent(responseInfo) || isPresent(timestamp)"
+    class="flex shrink-0 items-center justify-between border-t border-surface-600 px-3 py-1 text-xs text-surface-400"
   >
-    {{ responseInfo.length.toLocaleString() }} bytes |
-    {{ responseInfo.roundtripTime }}ms
+    <span v-if="isPresent(timestamp)">{{ timestamp }}</span>
+    <span v-else />
+    <span v-if="isPresent(responseInfo)">
+      {{ responseInfo.length.toLocaleString() }} bytes |
+      {{ responseInfo.roundtripTime }}ms
+    </span>
   </div>
 
   <SelectionContextMenu

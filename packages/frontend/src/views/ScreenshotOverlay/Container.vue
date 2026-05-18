@@ -144,6 +144,10 @@ function handleBackdropClick(event: MouseEvent): void {
   }
 }
 
+function formatTimestamp(): string {
+  return new Date().toLocaleString();
+}
+
 async function handleScreenshot(action: "disk" | "clipboard"): Promise<void> {
   const contentEl = contentPanelComponentRef.value?.getCaptureRootElement();
   if (contentEl === undefined) {
@@ -309,7 +313,12 @@ onUnmounted(() => {
                 :sni="urlInfo.sni"
                 :splitter-sizes="splitterSizes"
                 :crop-max-height="cropMaxHeight"
-                :response-info="responseInfo"
+                :response-info="
+                  settings.showResponseInfo ? responseInfo : undefined
+                "
+                :timestamp="
+                  settings.showTimestamp ? formatTimestamp() : undefined
+                "
                 @add-highlight="handleAddHighlight"
                 @add-redaction="handleAddRedaction"
                 @add-hidden-header="handleAddHiddenHeader"

@@ -18,6 +18,8 @@ export function fromV1(data: V1StoredData): V2StoredData {
       settings: {
         ...t.settings,
         headersToHide: normalizeHeaders(t.settings.headersToHide),
+        showTimestamp: false,
+        showResponseInfo: true,
       },
     })),
     defaultTemplateId: data.defaultTemplateId,
