@@ -32,10 +32,9 @@ import {
   type WidthSetting,
 } from "@/types";
 
-const { settings, selectedTemplateId, showTimestamp } = defineProps<{
+const { settings, selectedTemplateId } = defineProps<{
   settings: ScreenshotSettings;
   selectedTemplateId: string;
-  showTimestamp: boolean;
 }>();
 
 const emit = defineEmits<{
@@ -44,7 +43,6 @@ const emit = defineEmits<{
   resetToTemplate: [];
   saveAsNewTemplate: [name: string];
   updateCurrentTemplate: [];
-  "update:showTimestamp": [value: boolean];
 }>();
 
 const op = ref<InstanceType<typeof Popover> | undefined>(undefined);
@@ -325,11 +323,19 @@ function createTemplate() {
           class="w-32"
         />
       </div>
-      <div class="mt-3 flex items-center justify-between">
+    </div>
+
+    <div>
+      <label class="mb-2 block text-sm font-medium text-surface-200">
+        Metadata
+      </label>
+      <div class="flex items-center justify-between">
         <label class="text-sm text-surface-200">Show Timestamp</label>
         <ToggleSwitch
-          :model-value="showTimestamp"
-          @update:model-value="emit('update:showTimestamp', $event)"
+          :model-value="settings.showTimestamp"
+          @update:model-value="
+            emit('update', { ...settings, showTimestamp: $event })
+          "
         />
       </div>
     </div>

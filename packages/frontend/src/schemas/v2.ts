@@ -13,6 +13,7 @@ export const V2SettingsSchema = z.object({
   width: WidthSettingSchema,
   highlights: z.array(HighlightRuleSchema),
   redactions: z.array(RedactionRuleSchema),
+  showTimestamp: z.boolean().default(false),
 });
 
 export const V2TemplateSchema = z.object({

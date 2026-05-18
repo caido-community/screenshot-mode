@@ -145,4 +145,5 @@ export const DEFAULT_SETTINGS: ScreenshotSettings = {
   width: { mode: WidthMode.Full },
   highlights: [],
   redactions: [],
+  showTimestamp: false,
 };
