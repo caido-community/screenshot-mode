@@ -1,4 +1,4 @@
-import { toPng } from "html-to-image";
+import { domToPng } from "modern-screenshot";
 
 function shouldIncludeNode(node: Node): boolean {
   if (node instanceof HTMLElement) {
@@ -11,9 +11,12 @@ function shouldIncludeNode(node: Node): boolean {
 }
 
 async function renderElement(element: HTMLElement): Promise<string> {
-  const dataUrl = await toPng(element, {
-    pixelRatio: 2,
+  const dataUrl = await domToPng(element, {
+    scale: 2,
     filter: shouldIncludeNode,
+    features: {
+      restoreScrollPosition: true,
+    },
   });
   return dataUrl;
 }
