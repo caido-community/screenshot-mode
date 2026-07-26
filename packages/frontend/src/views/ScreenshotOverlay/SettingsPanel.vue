@@ -28,6 +28,8 @@ import {
   RuleTarget,
   type ScreenshotSettings,
   type Template,
+  Theme,
+  type Theme as ThemeType,
   WidthMode,
   type WidthSetting,
 } from "@/types";
@@ -74,6 +76,11 @@ const widthOptions = [
   { label: "Letter (612px)", value: WidthMode.Letter },
 ];
 
+const themeOptions = [
+  { label: "Dark", value: Theme.Dark },
+  { label: "Light", value: Theme.Light },
+];
+
 const headerTargetOptions = [
   { label: "Both", value: HeaderHideTarget.Both },
   { label: "Request", value: HeaderHideTarget.Request },
@@ -103,6 +110,13 @@ const disposition = computed({
   get: () => settings.disposition,
   set: (value: DispositionType) => {
     emit("update", { ...settings, disposition: value });
+  },
+});
+
+const theme = computed({
+  get: () => settings.theme,
+  set: (value: ThemeType) => {
+    emit("update", { ...settings, theme: value });
   },
 });
 
@@ -299,6 +313,32 @@ function createTemplate() {
         :allow-empty="false"
         class="w-full"
       />
+    </div>
+
+    <div>
+      <div class="mb-2">
+        <label class="block text-sm font-medium text-surface-200">Theme</label>
+        <p class="text-xs text-surface-400">
+          Light is easier to read when printed
+        </p>
+      </div>
+      <SelectButton
+        v-model="theme"
+        :options="themeOptions"
+        option-label="label"
+        option-value="value"
+        :allow-empty="false"
+        class="w-full"
+      />
+      <div class="mt-2 flex items-center justify-between">
+        <label class="text-sm text-surface-200">Syntax Highlighting</label>
+        <ToggleSwitch
+          :model-value="settings.syntaxHighlighting"
+          @update:model-value="
+            emit('update', { ...settings, syntaxHighlighting: $event })
+          "
+        />
+      </div>
     </div>
 
     <div>

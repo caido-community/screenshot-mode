@@ -3,14 +3,19 @@ import { z } from "zod";
 import {
   DispositionSchema,
   HiddenHeadersSchema,
+  ThemeSchema,
   WidthSettingSchema,
 } from "./common";
 import { HighlightRuleSchema, RedactionRuleSchema } from "./rules";
+
+import { Theme } from "@/types";
 
 export const V2SettingsSchema = z.object({
   headersToHide: HiddenHeadersSchema,
   disposition: DispositionSchema,
   width: WidthSettingSchema,
+  theme: ThemeSchema.default(Theme.Dark),
+  syntaxHighlighting: z.boolean().default(true),
   highlights: z.array(HighlightRuleSchema),
   redactions: z.array(RedactionRuleSchema),
   showTimestamp: z.boolean().default(false),

@@ -1,6 +1,6 @@
 import { z } from "zod";
 
-import { Disposition, RuleTarget, WidthMode } from "@/types";
+import { Disposition, RuleTarget, Theme, WidthMode } from "@/types";
 
 export const RuleTargetSchema = z.enum([
   RuleTarget.Request,
@@ -24,3 +24,5 @@ export const DispositionSchema = z.enum([
   Disposition.Horizontal,
   Disposition.Vertical,
 ]);
+
+export const ThemeSchema = z.enum([Theme.Dark, Theme.Light]);

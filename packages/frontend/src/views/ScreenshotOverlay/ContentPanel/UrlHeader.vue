@@ -1,10 +1,19 @@
 <script setup lang="ts">
+import { computed } from "vue";
+
+import { Theme } from "@/types";
 import { isPresent } from "@/utils/optional";
 
-const { url, sni } = defineProps<{
+const { url, sni, theme } = defineProps<{
   url: string;
   sni: string | undefined;
+  theme: Theme;
 }>();
+
+// The amber used on dark backgrounds is too pale to read on a light one.
+const sniColorClass = computed(() =>
+  theme === Theme.Light ? "text-amber-700" : "text-amber-400",
+);
 </script>
 
 <template>
@@ -26,7 +35,8 @@ const { url, sni } = defineProps<{
         >SNI</span
       >
       <code
-        class="break-all rounded bg-surface-700 px-2 py-1 font-mono text-sm text-amber-400"
+        class="break-all rounded bg-surface-700 px-2 py-1 font-mono text-sm"
+        :class="sniColorClass"
       >
         {{ sni }}
       </code>

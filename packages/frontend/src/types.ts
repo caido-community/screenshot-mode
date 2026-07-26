@@ -60,6 +60,12 @@ export const WidthMode = {
 } as const;
 export type WidthMode = (typeof WidthMode)[keyof typeof WidthMode];
 
+export const Theme = {
+  Dark: "dark",
+  Light: "light",
+} as const;
+export type Theme = (typeof Theme)[keyof typeof Theme];
+
 // --- Types ---
 
 export interface ResponseMeta {
@@ -143,6 +149,8 @@ export const DEFAULT_SETTINGS: ScreenshotSettings = {
   },
   disposition: Disposition.Horizontal,
   width: { mode: WidthMode.Full },
+  theme: Theme.Dark,
+  syntaxHighlighting: true,
   highlights: [],
   redactions: [],
   showTimestamp: false,

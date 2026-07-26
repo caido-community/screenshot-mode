@@ -16,6 +16,7 @@ import {
 import { applyDecorations } from "@/utils/decorations";
 import { filterHeaders } from "@/utils/headers";
 import { isPresent } from "@/utils/optional";
+import { applyEditorTheme } from "@/utils/theme";
 
 const {
   requestRaw,
@@ -107,6 +108,18 @@ function updateEditors(): void {
   );
 }
 
+function updateEditorsTheme(): void {
+  applyEditorTheme(requestEditor.getEditorView(), settings);
+  applyEditorTheme(responseEditor.getEditorView(), settings);
+}
+
+watch(
+  () => [settings.theme, settings.syntaxHighlighting],
+  () => {
+    updateEditorsTheme();
+  },
+);
+
 watch(
   () => [
     requestRaw,
@@ -148,6 +161,7 @@ function mountEditors(): void {
     responseEditorContainer.value.appendChild(element);
   }
 
+  updateEditorsTheme();
   updateEditors();
 }
 

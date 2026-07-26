@@ -8,9 +8,11 @@ import {
   type ResponseMeta,
   type RuleTarget,
   type ScreenshotSettings,
+  Theme,
   WidthMode,
 } from "@/types";
 import { isPresent } from "@/utils/optional";
+import { LIGHT_THEME_VARS } from "@/utils/theme";
 
 interface DataDisplayExposed {
   clearSelectionsForCapture: () => void;
@@ -58,6 +60,10 @@ const contentStyle = computed(() => {
   const width = settings.width;
   const style: Record<string, string> = {};
 
+  if (settings.theme === Theme.Light) {
+    Object.assign(style, LIGHT_THEME_VARS);
+  }
+
   if (width.mode === WidthMode.Pixel) {
     style.maxWidth = `${width.value}px`;
   } else if (width.mode === WidthMode.A4 || width.mode === WidthMode.Letter) {
@@ -93,7 +99,7 @@ defineExpose({
       class="flex w-full flex-1 flex-col overflow-hidden border border-surface-600"
       :style="contentStyle"
     >
-      <UrlHeader :url="url" :sni="sni" />
+      <UrlHeader :url="url" :sni="sni" :theme="settings.theme" />
       <DataDisplay
         ref="dataDisplayRef"
         :request-raw="requestRaw"

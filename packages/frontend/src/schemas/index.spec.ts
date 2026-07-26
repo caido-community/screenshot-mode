@@ -15,6 +15,7 @@ import {
   MatchMode,
   RedactionMode,
   RuleTarget,
+  Theme,
   WidthMode,
 } from "@/types";
 
@@ -387,5 +388,87 @@ describe("V2TemplateSchema", () => {
     };
     const result = V2TemplateSchema.safeParse(template);
     expect(result.success).toBe(true);
+  });
+
+  it("defaults the theme to dark when absent", () => {
+    const result = V2TemplateSchema.safeParse({
+      id: "abc",
+      name: "My Template",
+      settings: {
+        headersToHide: { both: [], request: [], response: [] },
+        disposition: Disposition.Vertical,
+        width: { mode: WidthMode.A4 },
+        highlights: [],
+        redactions: [],
+      },
+    });
+    expect(result.success).toBe(true);
+    expect(result.data?.settings.theme).toBe(Theme.Dark);
+  });
+
+  it("defaults syntax highlighting to on when absent", () => {
+    const result = V2TemplateSchema.safeParse({
+      id: "abc",
+      name: "My Template",
+      settings: {
+        headersToHide: { both: [], request: [], response: [] },
+        disposition: Disposition.Vertical,
+        width: { mode: WidthMode.A4 },
+        highlights: [],
+        redactions: [],
+      },
+    });
+    expect(result.success).toBe(true);
+    expect(result.data?.settings.syntaxHighlighting).toBe(true);
+  });
+
+  it("accepts syntax highlighting turned off", () => {
+    const result = V2TemplateSchema.safeParse({
+      id: "abc",
+      name: "My Template",
+      settings: {
+        headersToHide: { both: [], request: [], response: [] },
+        disposition: Disposition.Vertical,
+        width: { mode: WidthMode.A4 },
+        syntaxHighlighting: false,
+        highlights: [],
+        redactions: [],
+      },
+    });
+    expect(result.success).toBe(true);
+    expect(result.data?.settings.syntaxHighlighting).toBe(false);
+  });
+
+  it("accepts a light theme", () => {
+    const result = V2TemplateSchema.safeParse({
+      id: "abc",
+      name: "My Template",
+      settings: {
+        headersToHide: { both: [], request: [], response: [] },
+        disposition: Disposition.Vertical,
+        width: { mode: WidthMode.A4 },
+        theme: Theme.Light,
+        highlights: [],
+        redactions: [],
+      },
+    });
+    expect(result.success).toBe(true);
+    expect(result.data?.settings.theme).toBe(Theme.Light);
+  });
+
+  it("rejects an unknown theme", () => {
+    const result = V2TemplateSchema.safeParse({
+      id: "abc",
+      name: "My Template",
+      settings: {
+        headersToHide: { both: [], request: [], response: [] },
+        disposition: Disposition.Vertical,
+        width: { mode: WidthMode.A4 },
+        theme: "solarized",
+        highlights: [],
+        redactions: [],
+      },
+    });
+    expect(result.success).toBe(false);
   });
 });

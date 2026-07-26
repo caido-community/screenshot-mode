@@ -18,6 +18,24 @@ Create pretty screenshots of your requests and response right into Caido. No ext
 
 <img width="1435" height="822" alt="Image" src="https://github.com/user-attachments/assets/afb25d54-42fc-4d58-8bca-8778c99b8c17" />
 
+## Themes
+
+The `Theme` setting in the overlay controls how the captured area is rendered:
+
+- **Dark** — matches Caido. This is the default, and existing templates keep it.
+- **Light** — white background with dark text and a print-friendly syntax
+  palette. Use it for screenshots that end up in a report or a PDF, where dark
+  backgrounds waste ink and read poorly.
+
+`Syntax Highlighting` can be turned off independently of the theme, which drops
+the request and response to plain text — white on dark, or near-black on white.
+Useful when the point of the screenshot is a header or a value rather than the
+structure, and the colors are just noise. It does not affect your own highlight
+or redaction rules.
+
+Both are part of the settings, so they are saved with a template like any other
+option.
+
 ## Installation
 
 ### From Plugin Store
