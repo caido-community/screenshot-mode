@@ -16,8 +16,10 @@
   },
   "devDependencies": {
     "@caido/sdk-frontend": "0.54.1",
+    "@codemirror/language": "6.11.0",
     "@codemirror/state": "^6.5.2",
     "@codemirror/view": "6.36.6",
+    "@lezer/highlight": "1.2.1",
     "@types/lodash-es": "4.17.12",
     "vue-tsc": "2.2.4"
   }

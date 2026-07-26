@@ -8,6 +8,7 @@ import {
   MatchMode,
   RedactionMode,
   RuleTarget,
+  Theme,
   WidthMode,
 } from "@/types";
 
@@ -162,6 +163,31 @@ describe("migrateStorage", () => {
         request: ["Host"],
         response: [],
       });
+    });
+
+    it("keeps migrated templates on the dark theme with syntax colors on", () => {
+      const stored = {
+        version: 1,
+        templates: [
+          {
+            id: "t1",
+            name: "Default",
+            settings: {
+              headersToHide: ["Accept"],
+              disposition: Disposition.Horizontal,
+              width: { mode: WidthMode.Full },
+              highlights: [],
+              redactions: [],
+            },
+          },
+        ],
+        defaultTemplateId: "t1",
+      };
+
+      const { data } = migrateStorage(stored);
+
+      expect(data.templates[0]!.settings.theme).toBe(Theme.Dark);
+      expect(data.templates[0]!.settings.syntaxHighlighting).toBe(true);
     });
   });
 
