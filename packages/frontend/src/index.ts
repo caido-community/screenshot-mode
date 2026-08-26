@@ -81,14 +81,21 @@ export const init = (sdk: FrontendSDK) => {
       if (context.type === "RequestRowContext") {
         const request = context.requests[0];
         if (isPresent(request)) {
-          openOverlayWithRequest(request.id);
+          openOverlayWithRequest({ requestId: request.id });
         }
       } else if (context.type === "RequestContext") {
         if ("id" in context.request) {
-          openOverlayWithRequest(context.request.id);
+          openOverlayWithRequest({
+            requestId: context.request.id,
+            requestRaw: context.request.raw,
+          });
         }
       } else if (context.type === "ResponseContext") {
-        openOverlayWithRequest(context.request.id);
+        openOverlayWithRequest({
+          requestId: context.request.id,
+          responseId: context.response.id,
+          responseRaw: context.response.raw,
+        });
       }
     },
     when: (context) => {

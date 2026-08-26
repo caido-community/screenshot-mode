@@ -1,11 +1,13 @@
 import { ref, type Ref } from "vue";
 
+import { type OverlayTarget } from "@/types";
+
 type OverlayState = {
   isOpen: boolean;
 } & (
-  | { sessionId: string; requestId?: never }
-  | { requestId: string; sessionId?: never }
-  | { sessionId?: never; requestId?: never }
+  | { sessionId: string; target?: never }
+  | { target: OverlayTarget; sessionId?: never }
+  | { sessionId?: never; target?: never }
 );
 
 const overlayState: Ref<OverlayState> = ref({
@@ -23,10 +25,10 @@ export function openOverlay(sessionId: string): void {
   };
 }
 
-export function openOverlayWithRequest(requestId: string): void {
+export function openOverlayWithRequest(target: OverlayTarget): void {
   overlayState.value = {
     isOpen: true,
-    requestId,
+    target,
   };
 }
 

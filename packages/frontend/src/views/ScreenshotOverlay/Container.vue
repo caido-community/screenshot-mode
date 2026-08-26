@@ -8,6 +8,7 @@ import SettingsPanel from "./SettingsPanel.vue";
 import { useCrop } from "./useCrop";
 import { type ContentPanelExposed, useForm } from "./useForm";
 import { useRequestData } from "./useRequestData";
+import VariantSelect from "./VariantSelect.vue";
 
 import { useSDK } from "@/plugins/sdk";
 import { closeOverlay, getOverlayState } from "@/stores/overlay";
@@ -38,8 +39,14 @@ const {
   responseRaw,
   urlInfo,
   responseInfo,
+  requestVariants,
+  responseVariants,
+  selectedRequestId,
+  selectedResponseId,
   loadFromSession,
   loadFromRequest,
+  selectRequestVariant,
+  selectResponseVariant,
 } = useRequestData();
 const {
   getTabSettings,
@@ -63,8 +70,8 @@ const contentPanelComponentRef = ref<ContentPanelExposed | undefined>(
 
 const isVisible = computed(() => overlayState.value.isOpen);
 const sessionId = computed(() => overlayState.value.sessionId);
-const requestId = computed(() => overlayState.value.requestId);
-const tabKey = computed(() => sessionId.value ?? requestId.value);
+const target = computed(() => overlayState.value.target);
+const tabKey = computed(() => sessionId.value ?? target.value?.requestId);
 const { handleSaveAsNewTemplate, handleUpdateCurrentTemplate } = useForm(
   settings,
   tabKey,
@@ -98,8 +105,11 @@ async function loadOverlayData(): Promise<void> {
 
   if (isPresent(sessionId.value)) {
     await loadFromSession();
-  } else if (isPresent(requestId.value)) {
-    await loadFromRequest(requestId.value);
+    return;
+  }
+
+  if (isPresent(target.value)) {
+    await loadFromRequest(target.value);
   }
 }
 
@@ -226,14 +236,11 @@ function handleAddHiddenHeader(headerName: string): void {
   });
 }
 
-watch(
-  () => tabKey.value,
-  () => {
-    if (overlayState.value.isOpen) {
-      loadOverlayData();
-    }
-  },
-);
+watch([isVisible, tabKey], () => {
+  if (isVisible.value) {
+    loadOverlayData();
+  }
+});
 
 onMounted(() => {
   document.addEventListener("keydown", handleKeydown);
@@ -277,12 +284,26 @@ onUnmounted(() => {
               @click="handleScreenshot('clipboard')"
             />
           </div>
-          <button
-            class="rounded p-1 text-surface-400 transition-colors hover:bg-surface-700 hover:text-surface-200"
-            @click="closeOverlay"
-          >
-            <i class="fas fa-times text-lg" />
-          </button>
+          <div class="flex items-center gap-3">
+            <VariantSelect
+              label="Request"
+              :variants="requestVariants"
+              :selected-id="selectedRequestId"
+              @select="selectRequestVariant"
+            />
+            <VariantSelect
+              label="Response"
+              :variants="responseVariants"
+              :selected-id="selectedResponseId"
+              @select="selectResponseVariant"
+            />
+            <button
+              class="rounded p-1 text-surface-400 transition-colors hover:bg-surface-700 hover:text-surface-200"
+              @click="closeOverlay"
+            >
+              <i class="fas fa-times text-lg" />
+            </button>
+          </div>
         </div>
 
         <div class="flex flex-1 overflow-hidden">
