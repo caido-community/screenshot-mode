@@ -3,8 +3,9 @@ import { ref } from "vue";
 import { useEntry } from "./useEntry";
 
 import { useSDK } from "@/plugins/sdk";
-import { type ResponseMeta } from "@/types";
+import { type OverlayTarget, type ResponseMeta, type Variant } from "@/types";
 import { isPresent } from "@/utils/optional";
+import { toVariants } from "@/utils/variants";
 
 export function useRequestData() {
   const sdk = useSDK();
@@ -17,43 +18,89 @@ export function useRequestData() {
     sni: undefined,
   });
   const responseInfo = ref<ResponseMeta | undefined>(undefined);
+  const requestVariants = ref<Variant[]>([]);
+  const responseVariants = ref<Variant[]>([]);
+  const selectedRequestId = ref("");
+  const selectedResponseId = ref("");
 
-  async function fetchRequestData(requestId: string): Promise<void> {
+  function clearResponse(): void {
+    responseRaw.value = "";
+    responseInfo.value = undefined;
+    responseVariants.value = [];
+    selectedResponseId.value = "";
+  }
+
+  function clear(): void {
+    requestRaw.value = "";
+    urlInfo.value = { url: "", sni: undefined };
+    requestVariants.value = [];
+    selectedRequestId.value = "";
+    clearResponse();
+  }
+
+  function notifyFailure(subject: string, error: unknown): void {
+    const message = error instanceof Error ? error.message : "Unknown error";
+    sdk.window.showToast(`Failed to load ${subject}: ${message}`, {
+      variant: "error",
+    });
+  }
+
+  async function loadResponse(
+    responseId: string,
+    preloadedRaw: string | undefined,
+  ): Promise<void> {
     try {
-      const requestData = await sdk.graphql.request({ id: requestId });
-      const request = requestData.request;
-      if (!isPresent(request)) {
+      const { response } = await sdk.graphql.response({ id: responseId });
+      if (!isPresent(response)) {
+        clearResponse();
         return;
       }
 
-      requestRaw.value = request.raw ?? "";
+      responseRaw.value = preloadedRaw ?? response.raw;
+      responseInfo.value = {
+        length: response.length,
+        roundtripTime: response.roundtripTime,
+      };
+      responseVariants.value = toVariants(response, response.edits);
+      selectedResponseId.value = response.id;
+    } catch (error) {
+      clearResponse();
+      notifyFailure("response data", error);
+    }
+  }
+
+  async function loadFromRequest(target: OverlayTarget): Promise<void> {
+    try {
+      const { request } = await sdk.graphql.request({ id: target.requestId });
+      if (!isPresent(request)) {
+        clear();
+        return;
+      }
+
+      requestRaw.value = target.requestRaw ?? request.raw;
       urlInfo.value = {
         url: `${request.isTls ? "https" : "http"}://${request.host}:${
           request.port
-        }${request.path}${request.query ?? ""}`,
+        }${request.path}${request.query}`,
         sni: request.sni ?? undefined,
       };
+      requestVariants.value = toVariants(request, request.edits);
+      selectedRequestId.value = request.id;
+
+      if (isPresent(target.responseId)) {
+        await loadResponse(target.responseId, target.responseRaw);
+        return;
+      }
 
       if (isPresent(request.response)) {
-        const responseData = await sdk.graphql.response({
-          id: request.response.id,
-        });
-        responseRaw.value = responseData.response?.raw ?? "";
-        responseInfo.value = isPresent(responseData.response)
-          ? {
-              length: responseData.response.length,
-              roundtripTime: responseData.response.roundtripTime,
-            }
-          : undefined;
-      } else {
-        responseRaw.value = "";
-        responseInfo.value = undefined;
+        await loadResponse(request.response.id, undefined);
+        return;
       }
+
+      clearResponse();
     } catch (error) {
-      const message = error instanceof Error ? error.message : "Unknown error";
-      sdk.window.showToast(`Failed to load request data: ${message}`, {
-        variant: "error",
-      });
+      clear();
+      notifyFailure("request data", error);
     }
   }
 
@@ -63,11 +110,15 @@ export function useRequestData() {
       return;
     }
 
-    await fetchRequestData(activeRequestId);
+    await loadFromRequest({ requestId: activeRequestId });
   }
 
-  async function loadFromRequest(requestId: string): Promise<void> {
-    await fetchRequestData(requestId);
+  async function selectRequestVariant(requestId: string): Promise<void> {
+    await loadFromRequest({ requestId });
+  }
+
+  async function selectResponseVariant(responseId: string): Promise<void> {
+    await loadResponse(responseId, undefined);
   }
 
   return {
@@ -75,7 +126,13 @@ export function useRequestData() {
     responseRaw,
     urlInfo,
     responseInfo,
+    requestVariants,
+    responseVariants,
+    selectedRequestId,
+    selectedResponseId,
     loadFromSession,
     loadFromRequest,
+    selectRequestVariant,
+    selectResponseVariant,
   };
 }

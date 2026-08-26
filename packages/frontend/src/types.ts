@@ -60,12 +60,31 @@ export const WidthMode = {
 } as const;
 export type WidthMode = (typeof WidthMode)[keyof typeof WidthMode];
 
+export const Alteration = {
+  None: "NONE",
+  Tamper: "TAMPER",
+  Manual: "MANUAL",
+} as const;
+export type Alteration = (typeof Alteration)[keyof typeof Alteration];
+
 // --- Types ---
 
-export interface ResponseMeta {
+export type ResponseMeta = {
   length: number;
   roundtripTime: number;
-}
+};
+
+export type Variant = {
+  id: string;
+  alteration: Alteration;
+};
+
+export type OverlayTarget = {
+  requestId: string;
+  requestRaw?: string;
+  responseId?: string;
+  responseRaw?: string;
+};
 
 // --- Inferred Types ---
 
