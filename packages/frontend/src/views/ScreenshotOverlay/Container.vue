@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { storeToRefs } from "pinia";
 import Button from "primevue/button";
+import SelectButton from "primevue/selectbutton";
 import { computed, onMounted, onUnmounted, ref, watch } from "vue";
 
 import { ContentPanel } from "./ContentPanel";
@@ -24,6 +25,10 @@ import {
   type ScreenshotSettings,
 } from "@/types";
 import { delay } from "@/utils/async";
+import {
+  MessageViewMode,
+  type MessageViewMode as MessageViewModeType,
+} from "@/utils/httpFormatting";
 import { isPresent } from "@/utils/optional";
 import {
   captureAndCopyToClipboard,
@@ -63,6 +68,12 @@ const overlayState = getOverlayState();
 
 const settings = ref<ScreenshotSettings | undefined>(undefined);
 const selectedTemplateId = ref<string>("");
+const requestViewMode = ref<MessageViewModeType>(MessageViewMode.Pretty);
+const responseViewMode = ref<MessageViewModeType>(MessageViewMode.Pretty);
+const viewModeOptions = [
+  { label: "Pretty", value: MessageViewMode.Pretty },
+  { label: "Raw", value: MessageViewMode.Raw },
+];
 
 const contentPanelComponentRef = ref<ContentPanelExposed | undefined>(
   undefined,
@@ -323,6 +334,36 @@ onUnmounted(() => {
           </div>
 
           <div class="flex flex-1 flex-col overflow-hidden bg-surface-900">
+            <div
+              class="flex shrink-0 items-center justify-center gap-6 border-b border-surface-600 bg-surface-800 px-3 py-2"
+            >
+              <div class="flex items-center gap-2">
+                <span class="text-xs font-medium text-surface-300"
+                  >Request</span
+                >
+                <SelectButton
+                  v-model="requestViewMode"
+                  :options="viewModeOptions"
+                  option-label="label"
+                  option-value="value"
+                  :allow-empty="false"
+                  size="small"
+                />
+              </div>
+              <div class="flex items-center gap-2">
+                <span class="text-xs font-medium text-surface-300"
+                  >Response</span
+                >
+                <SelectButton
+                  v-model="responseViewMode"
+                  :options="viewModeOptions"
+                  option-label="label"
+                  option-value="value"
+                  :allow-empty="false"
+                  size="small"
+                />
+              </div>
+            </div>
             <div class="flex flex-1 justify-center overflow-auto">
               <ContentPanel
                 v-if="isPresent(settings)"
@@ -330,6 +371,8 @@ onUnmounted(() => {
                 :settings="settings"
                 :request-raw="requestRaw"
                 :response-raw="responseRaw"
+                :request-view-mode="requestViewMode"
+                :response-view-mode="responseViewMode"
                 :url="urlInfo.url"
                 :sni="urlInfo.sni"
                 :splitter-sizes="splitterSizes"
