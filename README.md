@@ -18,6 +18,18 @@ Create pretty screenshots of your requests and response right into Caido. No ext
 
 <img width="1435" height="822" alt="Image" src="https://github.com/user-attachments/assets/afb25d54-42fc-4d58-8bca-8778c99b8c17" />
 
+## Pretty and Raw views
+
+Request and response bodies can be switched between Pretty and Raw independently.
+Pretty mode formats JSON, XML, and URL-encoded form bodies for the screenshot while
+leaving the underlying HTTP message unchanged.
+
+| Raw | Pretty |
+| --- | --- |
+| ![Synthetic request and response in Raw mode](docs/images/pretty-view-before.png) | ![The same synthetic request and response in Pretty mode](docs/images/pretty-view-after.png) |
+
+The comparison uses synthetic example data only.
+
 ## Installation
 
 ### From Plugin Store
