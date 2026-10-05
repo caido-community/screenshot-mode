@@ -1,11 +1,11 @@
 <script setup lang="ts">
 import Button from "primevue/button";
-import ColorPicker from "primevue/colorpicker";
 import InputText from "primevue/inputtext";
 import Select from "primevue/select";
 import SelectButton from "primevue/selectbutton";
 import { computed } from "vue";
 
+import { ColorInput } from "@/components/ColorInput";
 import {
   HighlightMode,
   type HighlightRule,
@@ -14,7 +14,6 @@ import {
   RuleTarget,
   type RuleTarget as RuleTargetType,
 } from "@/types";
-import { isPresent } from "@/utils/optional";
 
 const { rule, inOverlay = false } = defineProps<{
   rule: HighlightRule;
@@ -55,10 +54,8 @@ function handleModeChange(value: HighlightMode): void {
   emit("update", { ...rule, mode: value });
 }
 
-function handleColorChange(value: string | undefined): void {
-  if (isPresent(value)) {
-    emit("update", { ...rule, color: `#${value}` });
-  }
+function handleColorChange(color: string): void {
+  emit("update", { ...rule, color });
 }
 
 function handleMatchModeChange(value: MatchModeType): void {
@@ -108,11 +105,10 @@ function handleMatchModeChange(value: MatchModeType): void {
         :append-to="appendTo"
         @update:model-value="handleModeChange"
       />
-      <ColorPicker
-        :model-value="rule.color.replace('#', '')"
-        format="hex"
+      <ColorInput
+        :color="rule.color"
         :append-to="appendTo"
-        @update:model-value="handleColorChange"
+        @update="handleColorChange"
       />
       <SelectButton
         :model-value="rule.matchMode"

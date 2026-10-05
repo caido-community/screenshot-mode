@@ -1,13 +1,13 @@
 <script setup lang="ts">
 import Button from "primevue/button";
 import Checkbox from "primevue/checkbox";
-import ColorPicker from "primevue/colorpicker";
 import InputText from "primevue/inputtext";
 import MultiSelect from "primevue/multiselect";
 import Select from "primevue/select";
 import SelectButton from "primevue/selectbutton";
 import { computed } from "vue";
 
+import { ColorInput } from "@/components/ColorInput";
 import {
   MatchMode,
   type MatchMode as MatchModeType,
@@ -16,7 +16,6 @@ import {
   RuleTarget,
   type RuleTarget as RuleTargetType,
 } from "@/types";
-import { isPresent } from "@/utils/optional";
 
 const { rule, inOverlay = false } = defineProps<{
   rule: RedactionRule;
@@ -233,9 +232,9 @@ function handleModeChange(value: RedactionMode): void {
   emit("update", buildRule(value, {}));
 }
 
-function handleColorChange(value: string | undefined): void {
-  if (isPresent(value) && rule.mode === RedactionMode.Opaque) {
-    emit("update", buildRule(RedactionMode.Opaque, { color: `#${value}` }));
+function handleColorChange(color: string): void {
+  if (rule.mode === RedactionMode.Opaque) {
+    emit("update", buildRule(RedactionMode.Opaque, { color }));
   }
 }
 
@@ -319,12 +318,11 @@ function handleMatchModeChange(value: MatchModeType): void {
         :append-to="appendTo"
         @update:model-value="handleModeChange"
       />
-      <ColorPicker
+      <ColorInput
         v-if="rule.mode === RedactionMode.Opaque"
-        :model-value="rule.color.replace('#', '')"
-        format="hex"
+        :color="rule.color"
         :append-to="appendTo"
-        @update:model-value="handleColorChange"
+        @update="handleColorChange"
       />
       <InputText
         v-if="rule.mode === RedactionMode.Replace"
