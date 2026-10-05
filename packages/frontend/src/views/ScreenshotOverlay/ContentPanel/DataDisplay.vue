@@ -22,7 +22,6 @@ const {
   responseRaw,
   settings,
   splitterSizes,
-  isCropped = false,
   responseInfo = undefined,
   timestamp = undefined,
 } = defineProps<{
@@ -30,7 +29,6 @@ const {
   responseRaw: string;
   settings: ScreenshotSettings;
   splitterSizes: [number, number];
-  isCropped?: boolean;
   responseInfo?: ResponseMeta;
   timestamp?: string;
 }>();
@@ -150,22 +148,6 @@ function mountEditors(): void {
 
   updateEditors();
 }
-
-function updateScrollerOverflow(hidden: boolean): void {
-  const reqView = requestEditor.getEditorView();
-  const resView = responseEditor.getEditorView();
-
-  for (const view of [reqView, resView]) {
-    view.scrollDOM.style.overflow = hidden ? "hidden" : "";
-  }
-}
-
-watch(
-  () => isCropped,
-  (cropped) => {
-    updateScrollerOverflow(cropped);
-  },
-);
 
 function handleGlobalClick(): void {
   contextMenuVisible.value = false;
