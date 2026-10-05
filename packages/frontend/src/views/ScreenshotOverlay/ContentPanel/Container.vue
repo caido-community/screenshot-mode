@@ -10,7 +10,6 @@ import {
   type ScreenshotSettings,
   WidthMode,
 } from "@/types";
-import { isPresent } from "@/utils/optional";
 
 interface DataDisplayExposed {
   clearSelectionsForCapture: () => void;
@@ -100,7 +99,6 @@ defineExpose({
         :response-raw="responseRaw"
         :settings="settings"
         :splitter-sizes="splitterSizes"
-        :is-cropped="isPresent(cropMaxHeight)"
         :response-info="responseInfo"
         :timestamp="timestamp"
         @add-highlight="(regex, target) => emit('addHighlight', regex, target)"
