@@ -1,5 +1,5 @@
 <div align="center">
-  <img width="1000" alt="image" src="https://github.com/caido-community/.github/blob/main/content/banner.png?raw=true">
+  <img width="1000" alt="image" src="assets/banner.png">
 
   <br />
   <br />
@@ -16,7 +16,7 @@
 
 Create pretty screenshots of your requests and response right into Caido. No external tools, no pain. Start sharing!
 
-<img width="1435" height="822" alt="Image" src="https://github.com/user-attachments/assets/afb25d54-42fc-4d58-8bca-8778c99b8c17" />
+<img width="1435" height="822" alt="Image" src="assets/screenshot.png" />
 
 ## Installation
 
