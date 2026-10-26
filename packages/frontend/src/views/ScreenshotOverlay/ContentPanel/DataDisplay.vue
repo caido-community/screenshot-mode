@@ -14,6 +14,7 @@ import {
   type ScreenshotSettings,
 } from "@/types";
 import { applyDecorations } from "@/utils/decorations";
+import { mountEditor } from "@/utils/editor";
 import { filterHeaders } from "@/utils/headers";
 import { isPresent } from "@/utils/optional";
 
@@ -131,19 +132,11 @@ watch(
 
 function mountEditors(): void {
   if (isPresent(requestEditorContainer.value)) {
-    const element = requestEditor.getElement();
-    element.style.height = "100%";
-    element.style.width = "100%";
-    requestEditorContainer.value.innerHTML = "";
-    requestEditorContainer.value.appendChild(element);
+    mountEditor(requestEditorContainer.value, requestEditor.getElement());
   }
 
   if (isPresent(responseEditorContainer.value)) {
-    const element = responseEditor.getElement();
-    element.style.height = "100%";
-    element.style.width = "100%";
-    responseEditorContainer.value.innerHTML = "";
-    responseEditorContainer.value.appendChild(element);
+    mountEditor(responseEditorContainer.value, responseEditor.getElement());
   }
 
   updateEditors();

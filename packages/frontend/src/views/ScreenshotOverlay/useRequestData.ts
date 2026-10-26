@@ -5,6 +5,7 @@ import { useEntry } from "./useEntry";
 import { useSDK } from "@/plugins/sdk";
 import { type OverlayTarget, type ResponseMeta, type Variant } from "@/types";
 import { isPresent } from "@/utils/optional";
+import { formatUrl } from "@/utils/url";
 import { toVariants } from "@/utils/variants";
 
 export function useRequestData() {
@@ -79,9 +80,7 @@ export function useRequestData() {
 
       requestRaw.value = target.requestRaw ?? request.raw;
       urlInfo.value = {
-        url: `${request.isTls ? "https" : "http"}://${request.host}:${
-          request.port
-        }${request.path}${request.query}`,
+        url: formatUrl(request),
         sni: request.sni ?? undefined,
       };
       requestVariants.value = toVariants(request, request.edits);
